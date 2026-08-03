@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>流光画廊 · 变速影集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@200;300;400;500&family=Noto+Serif+SC:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============ 基底：封死滚动 + 深空灰 ============ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; width: 100%;
+    overflow: hidden;
+    background: #121212;
+    color: #fff;
+    font-family: 'Jost', 'Noto Serif SC', serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { overscroll-behavior: none; }
+  /* 彻底封死默认滚动与触摸拖拽 */
+  body { touch-action: none; }
+
+  /* ============ 胶片颗粒噪点叠加 ============ */
+  .grain {
+    position: fixed; inset: -60%;
+    z-index: 220; pointer-events: none;
+    opacity: 0.07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    animation: grain 0.7s steps(5) infinite;
+  }
+  @keyframes grain {
+    0%   { transform: translate(0, 0); }
+    20%  { transform: translate(-4%, 3%); }
+    40%  { transform: translate(3%, -4%); }
+    60%  { transform: translate(-3%, -2%); }
+    80%  { transform: translate(2%, 4%); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* 全局暗角，收束视线 */
+  .vignette {
+    position: fixed; inset: 0; z-index: 95; pointer-events: none;
+    background: radial-gradient(125% 105% at 50% 50%, transparent 52%, rgba(0,0,0,0.5) 100%);
+  }
+
+  /* ============ 顶部磨砂玻璃导航栏 ============ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 80px; padding: 0 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  }
+  /* 底部 1px 线性渐变分割线：中间亮白，两端透明 */
+  .nav::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  }
+  /* 跟随光标的径向高光：模拟环境光在玻璃上的折射 */
+  .nav-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%),
+                rgba(255,255,255,0.18), rgba(255,255,255,0.04) 45%, transparent 65%);
+    mix-blend-mode: screen;
+  }
+
+  .brand { display: flex; align-items: center; gap: 16px; position: relative; }
+  .brand-mark { width: 30px; height: 30px; color: #fff; opacity: 0.95; }
+  .brand-text { display: flex; flex-direction: column; line-height: 1; }
+  .brand-cn {
+    font-family: 'Noto Serif SC', serif; font-weight: 300;
+    font-size: 21px; letter-spacing: 6px; color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+  .brand-en {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 8.5px; letter-spacing: 4px; color: rgba(255,255,255,0.55);
+    margin-top: 5px; text-transform: uppercase;
+  }
+
+  .nav-links { display: flex; align-items: center; gap: 26px; position: relative; }
+  .nav-links a {
+    font-family: 'Noto Serif SC', serif; font-weight: 300;
+    font-size: 15px; letter-spacing: 3px; color: #fff;
+    text-decoration: none; position: relative; padding: 6px 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    transition: opacity 0.4s ease;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; left: 50%; bottom: 0; width: 0; height: 1px;
+    background: rgba(255,255,255,0.85);
+    transition: width 0.45s cubic-bezier(0.16,1,0.3,1), left 0.45s cubic-bezier(0.16,1,0.3,1);
+  }
+  .nav-links a:hover { opacity: 0.8; }
+  .nav-links a:hover::after { width: 100%; left: 0; }
+  .nav-links .sep { color: rgba(255,255,255,0.3); font-weight: 200; }
+
+  /* ============ 五行流动照片区 ============ */
+  .gallery { position: fixed; inset: 0; z-index: 1; }
+  .row {
+    position: relative; height: 20vh; overflow: hidden;
+    cursor: crosshair;
+  }
+  .track {
+    position: absolute; inset: 0; height: 100%;
+    display: flex; will-change: transform;
+    transform: translate3d(var(--tx, 0px), 0, 0);
+  }
+  .set { display: flex; height: 100%; flex-shrink: 0; }
+  .photo {
+    position: relative; height: 20vh;
+    width: calc(20vh * 16 / 9);
+    flex-shrink: 0; overflow: hidden;
+  }
+  .photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1),
+                filter 0.8s ease,
+                opacity 1s ease;
+  }
+  .photo.loaded img { opacity: 1; }
+
+  /* —— 色调分区：用滤镜强制各行视觉节奏 —— */
+  /* 第1行 霓虹夜景/极光（高饱和冷色调） */
+  .row[data-row="0"] .photo { background: linear-gradient(120deg,#06243a,#0a3b66,#2b0f55); }
+  .row[data-row="0"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(1.4) contrast(1.08) hue-rotate(-12deg); }
+  /* 第2行 暖阳/人像特写（橙黄暖色调） */
+  .row[data-row="1"] .photo { background: linear-gradient(120deg,#3a1d06,#7a3d0a,#caa14a); }
+  .row[data-row="1"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(1.18) contrast(1.04) sepia(0.12); }
+  /* 第3行 黑白人文/静物（高对比消色） */
+  .row[data-row="2"] .photo { background: linear-gradient(120deg,#1a1a1a,#4a4a4a,#9a9a9a); }
+  .row[data-row="2"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) grayscale(1) contrast(1.18); }
+  /* 第4行 低饱和复古建筑（莫兰迪色系） */
+  .row[data-row="3"] .photo { background: linear-gradient(120deg,#3b3530,#6e6258,#a89c8c); }
+  .row[data-row="3"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(0.5) brightness(0.97) sepia(0.14) contrast(0.98); }
+  /* 第5行 宏大冰川/云海（长曝光柔色调） */
+  .row[data-row="4"] .photo { background: linear-gradient(120deg,#243640,#3f5a66,#8fb0bf); }
+  .row[data-row="4"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(0.82) brightness(1.06) contrast(0.94) blur(0.4px); }
+
+  /* 入场加载叙事：高斯模糊 20px → 清晰 */
+  body.loading .photo img { --blur: 20px; }
+
+  /* —— 氛围色罩（soft-light 轻染，强化基调不破坏细节） —— */
+  .row-tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; opacity: 0.55; z-index: 2; }
+  .row[data-row="0"] .row-tint { background: linear-gradient(110deg, rgba(60,190,255,0.45), rgba(150,80,255,0.45)); }
+  .row[data-row="1"] .row-tint { background: linear-gradient(110deg, rgba(255,170,80,0.4), rgba(255,110,40,0.4)); }
+  .row[data-row="2"] .row-tint { background: linear-gradient(110deg, rgba(255,255,255,0.12), rgba(40,40,40,0.25)); }
+  .row[data-row="3"] .row-tint { background: linear-gradient(110deg, rgba(200,188,168,0.35), rgba(160,150,138,0.35)); }
+  .row[data-row="4"] .row-tint { background: linear-gradient(110deg, rgba(170,205,228,0.35), rgba(205,220,230,0.35)); }
+
+  /* —— 上下渐隐遮罩（Feather Edge）：行间呼吸分割 —— */
+  .row-feather {
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0.13) 0%, rgba(0,0,0,0) 12%,
+      rgba(0,0,0,0) 88%, rgba(0,0,0,0.13) 100%);
+  }
+
+  /* —— 悬停扫描激光线 —— */
+  .scan {
+    position: absolute; left: 0; right: 0; height: 1px; z-index: 4; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+    box-shadow: 0 0 10px rgba(255,255,255,0.7);
+    opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .scan-top { top: 0; transform: translateY(-4px); }
+  .scan-bottom { bottom: 0; transform: translateY(4px); }
+  .row.hovered .scan { opacity: 1; transform: translateY(0); }
+
+  /* 悬停：该行整体放大 1.03 + 亮度 +10% */
+  .row.hovered { --b: 1.1; }
+  .row.hovered .photo img { transform: scale(1.03); }
+
+  /* 进场渐显整页 */
+  #gallery { opacity: 0; transition: opacity 1.2s ease; }
+  body.awake #gallery { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grain { animation: none; }
+  }
+</style>
+</head>
+<body class="loading">
+
+  <div class="grain"></div>
+
+  <!-- 顶部磨砂玻璃导航栏 -->
+  <header class="nav">
+    <div class="nav-glow"></div>
+    <div class="brand">
+      <!-- 抽象几何图标：光圈 -->
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round">
+        <circle cx="16" cy="16" r="13"/>
+        <circle cx="16" cy="16" r="4.2"/>
+        <line x1="16" y1="3" x2="16" y2="7.5"/>
+        <line x1="16" y1="24.5" x2="16" y2="29"/>
+        <line x1="3" y1="16" x2="7.5" y2="16"/>
+        <line x1="24.5" y1="16" x2="29" y2="16"/>
+        <line x1="6.8" y1="6.8" x2="9.6" y2="9.6"/>
+        <line x1="22.4" y1="22.4" x2="25.2" y2="25.2"/>
+        <line x1="25.2" y1="6.8" x2="22.4" y2="9.6"/>
+        <line x1="9.6" y1="22.4" x2="6.8" y2="25.2"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-cn">流光画廊</span>
+        <span class="brand-en">Flux · Gallery</span>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#">作品集</a><span class="sep">|</span>
+      <a href="#">关于</a><span class="sep">|</span>
+      <a href="#">联系</a>
+    </nav>
+  </header>
+
+  <main id="gallery" class="gallery"></main>
+
+  <div class="vignette"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ============ 配置：色调分区种子 + 变速分层（质数序列周期） ============
+  const SEEDS = [
+    // 第1行 极光/霓虹夜景（冷色调）
+    ['aurora-borealis','night-neon-7','glacier-glow-3','city-lights-9','midnight-blue-2','violet-sky-5'],
+    // 第2行 暖阳/人像特写（暖色调）
+    ['golden-hour-1','amber-warm-4','sunset-fire-6','honey-light-8','desert-warm-2','ember-glow-3'],
+    // 第3行 黑白人文/静物
+    ['mono-street-1','shadow-form-2','bw-still-3','contrast-life-4','silhouette-5','texture-bw-6'],
+    // 第4行 低饱和复古建筑（莫兰迪）
+    ['old-facade-1','stone-arch-2','vintage-wall-3','plaster-tone-4','morandi-bldg-5','quiet-arch-6'],
+    // 第5行 宏大冰川/云海（长曝光柔色）
+    ['glacier-vast-1','cloud-sea-2','misty-peak-3','long-expo-4','fjord-soft-5','ice-field-6']
+  ];
+  const CYCLES = [18000, 29000, 41000, 56000, 74000]; // ms：18 / 29 / 41 / 56 / 74 秒
+  const INIT_FRAC = [0, 0.17, 0.33, 0.52, 0.71];      // 首帧偏移，破除“齐步走”
+
+  const gallery = document.getElementById('gallery');
+
+  // ============ 构建五行 ============
+  function photoEl(seed) {
+    return '<div class="photo"><img alt="" src="https://picsum.photos/seed/' + seed + '/800/450"></div>';
+  }
+  SEEDS.forEach(function (seeds, i) {
+    const setHTML = seeds.map(photoEl).join('');
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.dataset.row = i;
+    row.innerHTML =
+      '<div class="track">' +
+        '<div class="set">' + setHTML + '</div>' +
+        '<div class="set">' + setHTML + '</div>' +
+      '</div>' +
+      '<div class="row-tint"></div>' +
+      '<div class="row-feather"></div>' +
+      '<div class="scan scan-top"></div>' +
+      '<div class="scan scan-bottom"></div>';
+    gallery.appendChild(row);
+  });
+
+  // 单张加载后渐显
+  gallery.querySelectorAll('img').forEach(function (img) {
+    const done = function () { img.closest('.photo').classList.add('loaded'); };
+    if (img.complete) done();
+    else { img.addEventListener('load', done); img.addEventListener('error', done); }
+  });
+
+  // ============ cubic-bezier 求值器 ============
+  function makeBezier(x1, y1, x2, y2) {
+    function sampleX(t) { return 3*(1-t)*(1-t)*t*x1 + 3*(1-t)*t*t*x2 + t*t*t; }
+    function sampleY(t) { return 3*(1-t)*(1-t)*t*y1 + 3*(1-t)*t*t*y2 + t*t*t; }
+    return function (p) {
+      if (p <= 0) return 0; if (p >= 1) return 1;
+      let lo = 0, hi = 1, t = p;
+      for (let k = 0; k < 24; k++) {
+        const x = sampleX(t) - p;
+        if (Math.abs(x) < 1e-5) break;
+        if (x < 0) lo = t; else hi = t;
+        t = (lo + hi) / 2;
+      }
+      return sampleY(t);
+    };
+  }
+  // 入场：缓入（ease-in）；悬停进入：快速；离开：1.5s 弹性回弹（橡皮筋）
+  const BEZ_IN_LOAD = makeBezier(0.42, 0, 1, 1);
+  const BEZ_ENTER   = makeBezier(0.4, 0, 0.2, 1);
+  const BEZ_LEAVE   = makeBezier(0.34, 1.56, 0.64, 1); // 轻微过冲
+
+  // ============ 行状态 ============
+  const rows = [];
+  function measure() {
+    document.querySelectorAll('.row').forEach(function (el, i) {
+      const set = el.querySelector('.set');
+      const w = set.offsetWidth;
+      if (!rows[i]) rows[i] = { el: el, track: el.querySelector('.track'), setWidth: w, offsetFrac: INIT_FRAC[i], multiplier: 0, cycle: CYCLES[i], tween: null };
+      else { rows[i].setWidth = w; rows[i].el = el; rows[i].track = el.querySelector('.track'); }
+    });
+  }
+  measure();
+
+  function startTween(r, to, dur, bez) {
+    r.tween = { from: r.multiplier, to: to, start: performance.now(), dur: dur, bez: bez };
+  }
+
+  // ============ 悬停连锁反应（流体涟漪） ============
+  function hover(idx) {
+    const enter = idx !== null;
+    const dur = enter ? 300 : 1500;
+    const bez = enter ? BEZ_ENTER : BEZ_LEAVE;
+    rows.forEach(function (r, i) {
+      r.el.classList.toggle('hovered', i === idx);
+      let target = 1;
+      if (enter) {
+        if (i === idx) target = 0;          // 主行静止
+        else if (i < idx) target = 0.7;     // 上方两行：减慢 30%
+        else target = 1.2;                  // 下方两行：加快 20%
+      }
+      startTween(r, target, dur, bez);
+    });
+  }
+  rows.forEach(function (r, i) {
+    r.el.addEventListener('mouseenter', function () { hover(i); });
+    r.el.addEventListener('mouseleave', function () { hover(null); });
+  });
+
+  // ============ 导航栏光标径向高光 ============
+  const nav = document.querySelector('.nav');
+  const glow = document.querySelector('.nav-glow');
+  nav.addEventListener('mousemove', function (e) {
+    const r = nav.getBoundingClientRect();
+    glow.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    glow.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+
+  // ============ 主循环：以 setWidth 归一化，resize 安全 ============
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(now - last, 50); last = now;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (r.tween) {
+        const t = Math.min((now - r.tween.start) / r.tween.dur, 1);
+        r.multiplier = r.tween.from + (r.tween.to - r.tween.from) * r.tween.bez(t);
+        if (t >= 1) r.tween = null;
+      }
+      // 每帧推进：周期越短越快
+      r.offsetFrac = (r.offsetFrac + (1 / r.cycle) * r.multiplier * dt) % 1;
+      r.offsetFrac = (r.offsetFrac + 1) % 1;
+      const tx = -r.offsetFrac * r.setWidth;
+      r.track.style.setProperty('--tx', tx + 'px');
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ============ 入场加载叙事：从梦境中醒来 ============
+  // 0.5s 后解除模糊 → 0.8s 内清晰聚焦，同时速度从静止缓入至既定值
+  setTimeout(function () {
+    document.body.classList.remove('loading');
+    document.body.classList.add('awake');
+    rows.forEach(function (r) { startTween(r, 1, 800, BEZ_IN_LOAD); });
+  }, 500);
+
+  // ============ 响应尺寸变化 ============
+  let rzT;
+  window.addEventListener('resize', function () {
+    clearTimeout(rzT);
+    rzT = setTimeout(measure, 150);
+  });
+})();
+</script>
+</body>
+</html>
