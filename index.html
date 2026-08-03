@@ -300,9 +300,6 @@
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .mp-bar:hover .mp-art { transform: scale(1.06); }
-  /* 播放时封面旋转 */
-  .mp-art.spinning { animation: spinArt 12s linear infinite; }
-  @keyframes spinArt { to { transform: rotate(360deg); } }
 
   /* —— 曲目信息 —— */
   .mp-info {
@@ -487,8 +484,6 @@
     object-fit: cover;
     transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
   }
-  .fp-art.spinning { animation: spinArt 12s linear infinite; }
-
   /* 曲目信息 */
   .fp-info { text-align: center; }
   .fp-title {
@@ -1531,31 +1526,23 @@
     playIcon.innerHTML = icon;
     playBtn.setAttribute('aria-label', label);
     if (isPlaying) {
-      art.classList.add('spinning');
       lastTick = performance.now();
-    } else {
-      art.classList.remove('spinning');
     }
     // 同步全屏播放器
     var fpPlayIcon2 = document.getElementById('fpPlayIcon');
     var fpPlayBtn2 = document.getElementById('fpPlay');
-    var fpArt2 = document.getElementById('fpArt');
     if (fpPlayIcon2) fpPlayIcon2.innerHTML = icon;
     if (fpPlayBtn2) fpPlayBtn2.setAttribute('aria-label', label);
-    if (fpArt2) {
-      if (isPlaying) fpArt2.classList.add('spinning');
-      else fpArt2.classList.remove('spinning');
-    }
   }
 
   function nextTrack() {
     loadTrack((currentTrack + 1) % PLAYLIST.length);
-    if (isPlaying) { lastTick = performance.now(); art.classList.add('spinning'); }
+    if (isPlaying) { lastTick = performance.now(); }
   }
 
   function prevTrack() {
     loadTrack((currentTrack - 1 + PLAYLIST.length) % PLAYLIST.length);
-    if (isPlaying) { lastTick = performance.now(); art.classList.add('spinning'); }
+    if (isPlaying) { lastTick = performance.now(); }
   }
 
   // 事件绑定
