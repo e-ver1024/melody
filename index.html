@@ -550,8 +550,9 @@
 
   // ============ 构建五行 ============
   function photoEl(src, isFirstRow) {
-    var fp = isFirstRow ? ' fetchpriority="high"' : '';
-    return '<div class="photo"><img alt="" loading="lazy"' + fp + ' decoding="async" src="' + src + '"></div>';
+    // 不使用 loading="lazy"：流动画廊所有图片都需要预加载，否则循环时出现黑块
+    var extra = isFirstRow ? ' fetchpriority="high"' : '';
+    return '<div class="photo"><img alt=""' + extra + ' decoding="async" src="' + src + '"></div>';
   }
   PHOTOS.forEach(function (photos, i) {
     const setHTML = photos.map(function (p) { return photoEl(p, i === 0); }).join('');
@@ -560,6 +561,7 @@
     row.dataset.row = i;
     row.innerHTML =
       '<div class="track">' +
+        '<div class="set">' + setHTML + '</div>' +
         '<div class="set">' + setHTML + '</div>' +
         '<div class="set">' + setHTML + '</div>' +
       '</div>' +
