@@ -236,9 +236,135 @@
   @media (prefers-reduced-motion: reduce) {
     .grain { animation: none; }
   }
+
+  /* ============ 登录门禁：毛玻璃 ============ */
+  .login-gate {
+    position: fixed; inset: 0; z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 8, 10, 0.55);
+    backdrop-filter: blur(40px) saturate(1.1);
+    -webkit-backdrop-filter: blur(40px) saturate(1.1);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;
+  }
+  .login-gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .login-card {
+    position: relative;
+    width: 380px; max-width: 90vw;
+    padding: 48px 40px 40px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    backdrop-filter: blur(28px) saturate(1.3);
+    -webkit-backdrop-filter: blur(28px) saturate(1.3);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-align: center;
+    transform: scale(0.94);
+    opacity: 0;
+    animation: loginIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+  @keyframes loginIn {
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .login-icon {
+    width: 48px; height: 48px; margin: 0 auto 20px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .login-title {
+    font-family: 'Cormorant Garamond', serif; font-weight: 400;
+    font-size: 24px; letter-spacing: 2px; color: #fff;
+    margin-bottom: 4px;
+  }
+  .login-subtitle {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4); margin-bottom: 32px;
+  }
+
+  .login-input-wrap {
+    position: relative; margin-bottom: 14px;
+  }
+  .login-input {
+    width: 100%; height: 48px;
+    padding: 0 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: #fff; font-size: 16px; letter-spacing: 2px;
+    font-family: 'Jost', sans-serif;
+    outline: none; text-align: center;
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  .login-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+    letter-spacing: 1px; font-size: 13px;
+  }
+  .login-input:focus {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .login-input.shake {
+    animation: shake 0.4s ease;
+    border-color: rgba(255, 80, 80, 0.6);
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+
+  .login-error {
+    font-family: 'Jost', sans-serif; font-size: 12px;
+    color: rgba(255, 100, 100, 0.8); letter-spacing: 1px;
+    height: 18px; opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .login-error.show { opacity: 1; }
+
+  .login-btn {
+    width: 100%; height: 48px; margin-top: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #fff; font-size: 14px; letter-spacing: 3px;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    cursor: pointer; text-transform: uppercase;
+    transition: background 0.3s ease, transform 0.15s ease;
+  }
+  .login-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .login-btn:active { transform: scale(0.97); }
+
+  .login-hint {
+    margin-top: 24px;
+    font-family: 'Jost', sans-serif; font-size: 10px;
+    color: rgba(255, 255, 255, 0.2); letter-spacing: 2px;
+  }
 </style>
 </head>
 <body>
+
+  <!-- 登录门禁：毛玻璃 -->
+  <div class="login-gate" id="loginGate">
+    <div class="login-card">
+      <svg class="login-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="11" width="16" height="10" rx="2"/>
+        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+        <circle cx="12" cy="16" r="1.5"/>
+      </svg>
+      <div class="login-title">Vladilena·Milizé</div>
+      <div class="login-subtitle">Private Gallery</div>
+      <div class="login-input-wrap">
+        <input type="password" class="login-input" id="loginInput" placeholder="输入密码 / Enter Password" autocomplete="off" autofocus>
+      </div>
+      <div class="login-error" id="loginError">密码错误，请重试</div>
+      <button class="login-btn" id="loginBtn">进 入</button>
+      <div class="login-hint">Authorized access only</div>
+    </div>
+  </div>
 
   <div class="grain"></div>
 
@@ -315,6 +441,41 @@
   </footer>
 
 <script>
+// ============ 登录门禁逻辑 ============
+(function () {
+  var PASSWORD = '123456';
+  var gate = document.getElementById('loginGate');
+  var input = document.getElementById('loginInput');
+  var btn = document.getElementById('loginBtn');
+  var error = document.getElementById('loginError');
+  var unlocked = false;
+
+  function tryUnlock() {
+    if (unlocked) return;
+    if (input.value === PASSWORD) {
+      unlocked = true;
+      gate.classList.add('hidden');
+      // 焦点交给画廊，允许键盘交互（如 Esc 关灯箱）
+      setTimeout(function () { gate.style.display = 'none'; }, 850);
+    } else {
+      input.classList.add('shake');
+      error.classList.add('show');
+      setTimeout(function () { input.classList.remove('shake'); }, 400);
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  btn.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') tryUnlock();
+  });
+  // 输入时隐藏错误提示
+  input.addEventListener('input', function () {
+    error.classList.remove('show');
+  });
+})();
+
 (function () {
   'use strict';
 
