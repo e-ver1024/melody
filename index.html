@@ -304,7 +304,8 @@
     document.querySelectorAll('.row').forEach(function (el, i) {
       const set = el.querySelector('.set');
       const w = set.offsetWidth;
-      if (!rows[i]) rows[i] = { el: el, track: el.querySelector('.track'), setWidth: w, offsetFrac: INIT_FRAC[i], multiplier: 0, cycle: CYCLES[i], tween: null };
+      const dir = (i % 2 === 0) ? 1 : -1;  // 相邻行方向相反
+      if (!rows[i]) rows[i] = { el: el, track: el.querySelector('.track'), setWidth: w, offsetFrac: INIT_FRAC[i], multiplier: 0, cycle: CYCLES[i], tween: null, dir: dir };
       else { rows[i].setWidth = w; rows[i].el = el; rows[i].track = el.querySelector('.track'); }
     });
   }
@@ -321,13 +322,13 @@
     const bez = enter ? BEZ_ENTER : BEZ_LEAVE;
     rows.forEach(function (r, i) {
       r.el.classList.toggle('hovered', i === idx);
-      let target = 1;
+      let speed = 1;
       if (enter) {
-        if (i === idx) target = 0;          // 主行静止
-        else if (i < idx) target = 0.7;     // 上方两行：减慢 30%
-        else target = 1.2;                  // 下方两行：加快 20%
+        if (i === idx) speed = 0;          // 主行静止
+        else if (i < idx) speed = 0.7;     // 上方两行：减慢 30%
+        else speed = 1.2;                  // 下方两行：加快 20%
       }
-      startTween(r, target, dur, bez);
+      startTween(r, speed * r.dir, dur, bez);  // 乘以方向
     });
   }
   rows.forEach(function (r, i) {
@@ -382,7 +383,7 @@
         r.multiplier = r.tween.from + (r.tween.to - r.tween.from) * r.tween.bez(t);
         if (t >= 1) r.tween = null;
       }
-      // 每帧推进：周期越短越快
+      // 每帧推进：乘数含方向（正=向右，负=向左）
       r.offsetFrac = (r.offsetFrac + (1 / r.cycle) * r.multiplier * dt) % 1;
       r.offsetFrac = (r.offsetFrac + 1) % 1;
       const tx = -r.offsetFrac * r.setWidth;
