@@ -223,17 +223,17 @@
   'use strict';
 
   // ============ 配置：色调分区种子 + 变速分层（质数序列周期） ============
-  const SEEDS = [
+  const PHOTOS = [
     // 第1行 极光/霓虹夜景（冷色调）
-    ['aurora-borealis','night-neon-7','glacier-glow-3','city-lights-9','midnight-blue-2','violet-sky-5'],
+    ['photos/r1_1.jpg','photos/r1_2.jpg','photos/r1_3.jpg','photos/r1_4.jpg'],
     // 第2行 暖阳/人像特写（暖色调）
-    ['golden-hour-1','amber-warm-4','sunset-fire-6','honey-light-8','desert-warm-2','ember-glow-3'],
+    ['photos/r2_1.jpg','photos/r2_2.jpg','photos/r2_3.jpg','photos/r2_4.jpg'],
     // 第3行 黑白人文/静物
-    ['mono-street-1','shadow-form-2','bw-still-3','contrast-life-4','silhouette-5','texture-bw-6'],
+    ['photos/r3_1.jpg','photos/r3_2.jpg','photos/r3_3.jpg','photos/r3_4.jpg'],
     // 第4行 低饱和复古建筑（莫兰迪）
-    ['old-facade-1','stone-arch-2','vintage-wall-3','plaster-tone-4','morandi-bldg-5','quiet-arch-6'],
+    ['photos/r4_1.jpg','photos/r4_2.jpg','photos/r4_3.jpg','photos/r4_4.jpg'],
     // 第5行 宏大冰川/云海（长曝光柔色）
-    ['glacier-vast-1','cloud-sea-2','misty-peak-3','long-expo-4','fjord-soft-5','ice-field-6']
+    ['photos/r5_1.jpg','photos/r5_2.jpg','photos/r5_3.jpg','photos/r5_4.jpg']
   ];
   const CYCLES = [18000, 29000, 41000, 56000, 74000]; // ms：18 / 29 / 41 / 56 / 74 秒
   const INIT_FRAC = [0, 0.17, 0.33, 0.52, 0.71];      // 首帧偏移，破除“齐步走”
@@ -241,11 +241,11 @@
   const gallery = document.getElementById('gallery');
 
   // ============ 构建五行 ============
-  function photoEl(seed) {
-    return '<div class="photo"><img alt="" src="https://picsum.photos/seed/' + seed + '/800/450"></div>';
+  function photoEl(src) {
+    return '<div class="photo"><img alt="" src="' + src + '"></div>';
   }
-  SEEDS.forEach(function (seeds, i) {
-    const setHTML = seeds.map(photoEl).join('');
+  PHOTOS.forEach(function (photos, i) {
+    const setHTML = photos.map(photoEl).join('');
     const row = document.createElement('div');
     row.className = 'row';
     row.dataset.row = i;
