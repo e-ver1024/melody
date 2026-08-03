@@ -1356,99 +1356,29 @@
   }
 
   // ============ 音乐播放器逻辑 ============
+  // 真实可播放的纯音乐（Pixabay 免费 CC0 授权）
   var PLAYLIST = [
-    { title: 'Midnight Reverie', artist: 'Vladilena·Milizé', duration: 245, art: 'photos/r1_1.jpg',
-      lyrics: [
-        { t: 0,   text: '夜幕低垂 星光如纱' },
-        { t: 12,  text: '城市的霓虹在远方闪烁' },
-        { t: 26,  text: '我听见午夜的回响' },
-        { t: 42,  text: '像一首未完的梦' },
-        { t: 58,  text: '时间在指尖滑落' },
-        { t: 75,  text: '记忆如潮水涌来' },
-        { t: 92,  text: 'Midnight reverie, take me home' },
-        { t: 110, text: '在这寂静的深夜' },
-        { t: 128, text: '我与你共舞到天明' },
-        { t: 146, text: '风穿过空荡的街道' },
-        { t: 164, text: '带走了所有的喧嚣' },
-        { t: 182, text: '只剩下心跳的节奏' },
-        { t: 200, text: '和你温柔的呼吸' },
-        { t: 220, text: 'Midnight reverie, never let go' }
-      ]
+    { title: 'Mountain Echo', artist: 'The_Mountain', duration: 0, src: 'https://cdn.pixabay.com/audio/2026/03/24/audio_c4e99502ee.mp3', art: 'photos/r1_1.jpg',
+      lyrics: [{ t: 0, text: ' ♪ 纯音乐 · Mountain Echo' }]
     },
-    { title: 'Crimson Twilight', artist: 'Vladilena·Milizé', duration: 198, art: 'photos/r2_2.jpg',
-      lyrics: [
-        { t: 0,   text: '绯红的暮光染红天际' },
-        { t: 14,  text: '最后一缕阳光消逝' },
-        { t: 28,  text: '我站在黄昏的边界' },
-        { t: 44,  text: '看你渐行渐远' },
-        { t: 60,  text: 'Crimson twilight, fading slow' },
-        { t: 76,  text: '余温还留在掌心' },
-        { t: 92,  text: '而夜色已漫过山岗' },
-        { t: 108, text: '如果时间能停驻' },
-        { t: 124, text: '我愿困在这瞬间' },
-        { t: 140, text: '让绯红永远燃烧' },
-        { t: 156, text: 'Crimson twilight, eternal glow' },
-        { t: 176, text: '在记忆深处不灭' }
-      ]
+    { title: 'Piano Serenity', artist: 'leberch', duration: 0, src: 'https://cdn.pixabay.com/audio/2026/05/05/audio_04a5c6dacb.mp3', art: 'photos/r2_2.jpg',
+      lyrics: [{ t: 0, text: ' ♪ 纯音乐 · Piano Serenity' }]
     },
-    { title: 'Silent Horizon', artist: 'Vladilena·Milizé', duration: 312, art: 'photos/r3_3.jpg',
-      lyrics: [
-        { t: 0,   text: '寂静的地平线延伸' },
-        { t: 16,  text: '天地之间只有我' },
-        { t: 32,  text: '脚步回荡在空旷' },
-        { t: 50,  text: '风诉说着远方的故事' },
-        { t: 68,  text: 'Silent horizon, calling me' },
-        { t: 86,  text: '走向未知的旅途' },
-        { t: 104, text: '每一步都是新的开始' },
-        { t: 122, text: '云海翻涌如梦境' },
-        { t: 140, text: '阳光穿透了迷雾' },
-        { t: 158, text: '世界在脚下展开' },
-        { t: 176, text: 'Silent horizon, set me free' },
-        { t: 194, text: '不再畏惧远方' },
-        { t: 212, text: '让风带我去翱翔' },
-        { t: 230, text: '穿越无声的旷野' },
-        { t: 248, text: '找到属于自己的光' },
-        { t: 270, text: 'Silent horizon, home at last' }
-      ]
+    { title: 'Mountain Reverie', artist: 'The_Mountain', duration: 0, src: 'https://cdn.pixabay.com/audio/2026/04/18/audio_6885cd593c.mp3', art: 'photos/r3_3.jpg',
+      lyrics: [{ t: 0, text: ' ♪ 纯音乐 · Mountain Reverie' }]
     },
-    { title: 'Ethereal Drift', artist: 'Vladilena·Milizé', duration: 267, art: 'photos/r4_4.jpg',
-      lyrics: [
-        { t: 0,   text: '在虚空中漂浮' },
-        { t: 14,  text: '灵魂脱离了引力' },
-        { t: 28,  text: 'Ethereal drift, weightless' },
-        { t: 44,  text: '穿越星尘的河流' },
-        { t: 60,  text: '时间在此刻溶解' },
-        { t: 76,  text: '光影交错成永恒' },
-        { t: 92,  text: '我是一片飘散的云' },
-        { t: 108, text: 'Ethereal drift, boundless' },
-        { t: 124, text: '在宇宙的边缘漫游' },
-        { t: 140, text: '感受万物的呼吸' },
-        { t: 156, text: '虚无中诞生了光' },
-        { t: 172, text: '我在漂流中找到自己' },
-        { t: 190, text: 'Ethereal drift, coming home' },
-        { t: 210, text: '回到最初的宁静' },
-        { t: 240, text: '在星光中安眠' }
-      ]
+    { title: 'Mountain Drift', artist: 'The_Mountain', duration: 0, src: 'https://cdn.pixabay.com/audio/2026/04/20/audio_b9c2a5bda4.mp3', art: 'photos/r4_4.jpg',
+      lyrics: [{ t: 0, text: ' ♪ 纯音乐 · Mountain Drift' }]
     },
-    { title: 'Aurora Lament', artist: 'Vladilena·Milizé', duration: 223, art: 'photos/r5_1.jpg',
-      lyrics: [
-        { t: 0,   text: '极光在夜空舞蹈' },
-        { t: 14,  text: '绿色的火焰燃烧' },
-        { t: 28,  text: 'Aurora lament, crying out' },
-        { t: 44,  text: '冰原上回荡着古老的歌' },
-        { t: 60,  text: '那是大地的叹息' },
-        { t: 76,  text: '星辰在聆听' },
-        { t: 92,  text: '万物静默如初' },
-        { t: 108, text: 'Aurora lament, farewell' },
-        { t: 124, text: '光影渐隐于晨曦' },
-        { t: 140, text: '留下无尽的思念' },
-        { t: 156, text: '在北极的尽头' },
-        { t: 172, text: '我听见你的低语' },
-        { t: 190, text: 'Aurora lament, until we meet' },
-        { t: 208, text: '在永恒的极光下' }
-      ]
+    { title: 'Gentle Strings', artist: 'NastelBom', duration: 0, src: 'https://cdn.pixabay.com/audio/2026/03/13/audio_d06905a403.mp3', art: 'photos/r5_1.jpg',
+      lyrics: [{ t: 0, text: ' ♪ 纯音乐 · Gentle Strings' }]
     }
   ];
+
+  // 真实音频元素
+  var audio = new Audio();
+  audio.volume = 0.7;
+  audio.crossOrigin = 'anonymous';
 
   var currentTrack = 0;
   var isPlaying = false;
@@ -1486,11 +1416,14 @@
   function loadTrack(idx) {
     currentTrack = idx;
     var t = PLAYLIST[idx];
+    // 设置音频源
+    audio.src = t.src;
+    audio.load();
     // 更新迷你播放器
     art.src = t.art;
     titleEl.textContent = t.title;
     artistEl.textContent = t.artist;
-    totalEl.textContent = formatTime(t.duration);
+    totalEl.textContent = '0:00';
     // 更新全屏播放器
     var fpArt2 = document.getElementById('fpArt');
     var fpTitle2 = document.getElementById('fpTitle');
@@ -1499,22 +1432,44 @@
     if (fpArt2) fpArt2.src = t.art;
     if (fpTitle2) fpTitle2.textContent = t.title;
     if (fpArtist2) fpArtist2.textContent = t.artist;
-    if (fpTotal2) fpTotal2.textContent = formatTime(t.duration);
+    if (fpTotal2) fpTotal2.textContent = '0:00';
     progress = 0;
     updateProgress();
     renderLyrics();
     updatePlaylistActive();
   }
 
+  // 音频元数据加载后更新时长
+  audio.addEventListener('loadedmetadata', function () {
+    var dur = audio.duration;
+    if (isFinite(dur) && dur > 0) {
+      PLAYLIST[currentTrack].duration = dur;
+      totalEl.textContent = formatTime(dur);
+      var fpTotal2 = document.getElementById('fpTotal');
+      if (fpTotal2) fpTotal2.textContent = formatTime(dur);
+    }
+  });
+
+  // 音频播放结束 → 下一首
+  audio.addEventListener('ended', function () {
+    nextTrack();
+    audio.play().catch(function(){});
+  });
+
+  // 音频加载错误处理
+  audio.addEventListener('error', function () {
+    titleEl.textContent = '加载失败，请稍后重试';
+  });
+
   function updateProgress() {
-    var t = PLAYLIST[currentTrack];
+    var dur = audio.duration || PLAYLIST[currentTrack].duration || 0;
     fill.style.width = (progress * 100) + '%';
-    currentEl.textContent = formatTime(progress * t.duration);
+    currentEl.textContent = formatTime(progress * dur);
     // 同步全屏播放器进度条
     var fpFill2 = document.getElementById('fpFill');
     var fpCurrent2 = document.getElementById('fpCurrent');
     if (fpFill2) fpFill2.style.width = (progress * 100) + '%';
-    if (fpCurrent2) fpCurrent2.textContent = formatTime(progress * t.duration);
+    if (fpCurrent2) fpCurrent2.textContent = formatTime(progress * dur);
     // 同步歌词高亮
     updateLyricHighlight();
   }
@@ -1526,7 +1481,10 @@
     playIcon.innerHTML = icon;
     playBtn.setAttribute('aria-label', label);
     if (isPlaying) {
+      audio.play().catch(function(e){ console.warn('播放失败:', e); });
       lastTick = performance.now();
+    } else {
+      audio.pause();
     }
     // 同步全屏播放器
     var fpPlayIcon2 = document.getElementById('fpPlayIcon');
@@ -1550,19 +1508,21 @@
   nextBtn.addEventListener('click', nextTrack);
   prevBtn.addEventListener('click', prevTrack);
 
-  // 点击进度条跳转
+  // 点击进度条跳转 — seek 真实音频
   trackEl.addEventListener('click', function (e) {
     var rect = trackEl.getBoundingClientRect();
     progress = (e.clientX - rect.left) / rect.width;
     progress = Math.max(0, Math.min(1, progress));
+    if (audio.duration > 0) audio.currentTime = progress * audio.duration;
     updateProgress();
   });
 
-  // 音量控制
+  // 音量控制 — 同步真实音频
   volTrack.addEventListener('click', function (e) {
     var rect = volTrack.getBoundingClientRect();
     volume = (e.clientX - rect.left) / rect.width;
     volume = Math.max(0, Math.min(1, volume));
+    audio.volume = volume;
     volFill.style.width = (volume * 100) + '%';
     updateVolIcon();
   });
@@ -1579,6 +1539,7 @@
 
   volIcon.addEventListener('click', function () {
     if (volume > 0) { volume = 0; } else { volume = 0.7; }
+    audio.volume = volume;
     volFill.style.width = (volume * 100) + '%';
     updateVolIcon();
   });
@@ -1592,17 +1553,10 @@
     });
   }
 
-  // 播放进度循环
+  // 播放进度循环 — 使用真实音频时间
   function tick(now) {
-    if (isPlaying) {
-      var dt = (now - lastTick) / 1000;
-      lastTick = now;
-      var t = PLAYLIST[currentTrack];
-      progress += dt / t.duration;
-      if (progress >= 1) {
-        progress = 0;
-        nextTrack();
-      }
+    if (isPlaying && audio.duration > 0) {
+      progress = audio.currentTime / audio.duration;
       updateProgress();
     }
     rafId = requestAnimationFrame(tick);
@@ -1666,11 +1620,12 @@
   fpNextBtn.addEventListener('click', nextTrack);
   fpPrevBtn.addEventListener('click', prevTrack);
 
-  // 全屏进度条跳转
+  // 全屏进度条跳转 — seek 真实音频
   fpTrackEl.addEventListener('click', function (e) {
     var rect = fpTrackEl.getBoundingClientRect();
     progress = (e.clientX - rect.left) / rect.width;
     progress = Math.max(0, Math.min(1, progress));
+    if (audio.duration > 0) audio.currentTime = progress * audio.duration;
     updateProgress();
   });
 
@@ -1706,13 +1661,15 @@
       });
     }
     fpLyricsEl.innerHTML = html;
-    // 点击歌词跳转
+    // 点击歌词跳转 — seek 真实音频
     fpLyricsEl.querySelectorAll('.fp-lyric-line').forEach(function (el) {
       el.addEventListener('click', function () {
         var time = parseFloat(this.getAttribute('data-time'));
-        var dur = PLAYLIST[currentTrack].duration;
-        progress = time / dur;
-        updateProgress();
+        if (audio.duration > 0) {
+          audio.currentTime = time;
+          progress = time / audio.duration;
+          updateProgress();
+        }
       });
     });
   }
@@ -1722,7 +1679,7 @@
     if (!fpLyricsEl) return;
     var t = PLAYLIST[currentTrack];
     if (!t.lyrics) return;
-    var currentSec = progress * t.duration;
+    var currentSec = audio.currentTime || (progress * (t.duration || 0));
     var idx = -1;
     for (var i = 0; i < t.lyrics.length; i++) {
       if (currentSec >= t.lyrics[i].t) idx = i;
