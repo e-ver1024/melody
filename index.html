@@ -409,6 +409,255 @@
     background: rgba(255, 255, 255, 0.45);
   }
 
+  /* ============ 全屏液态玻璃音乐播放器 ============ */
+  .fp {
+    position: fixed; inset: 0; z-index: 400;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .fp.open { opacity: 1; pointer-events: auto; }
+  .fp-backdrop {
+    position: absolute; inset: 0; z-index: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* 主容器：大液态玻璃面板 */
+  .fp-panel {
+    position: relative; z-index: 1;
+    width: 92vw; max-width: 1100px; height: 86vh; max-height: 720px;
+    border-radius: 32px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: url(#lgFull) blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    box-shadow:
+      0 30px 100px rgba(0, 0, 0, 0.5),
+      inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .fp.open .fp-panel { transform: scale(1); }
+  .fp-panel::before {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 32px; pointer-events: none; z-index: 1;
+    background: linear-gradient(135deg,
+      rgba(255,255,255,0.12) 0%, transparent 25%,
+      transparent 75%, rgba(255,255,255,0.06) 100%);
+  }
+
+  /* 关闭按钮 */
+  .fp-close {
+    position: absolute; top: 20px; right: 24px; z-index: 10;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px) saturate(1.3);
+    -webkit-backdrop-filter: blur(8px) saturate(1.3);
+    color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .fp-close:hover { background: rgba(255,255,255,0.16); color: #fff; transform: rotate(90deg); }
+  .fp-close svg { width: 18px; height: 18px; }
+
+  /* —— 左侧：专辑封面 + 控制区 —— */
+  .fp-left {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px; gap: 24px;
+  }
+
+  /* 大专辑封面 */
+  .fp-art-wrap {
+    position: relative;
+    width: 280px; height: 280px;
+    border-radius: 24px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .fp-art {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  .fp-art.spinning { animation: spinArt 12s linear infinite; }
+
+  /* 曲目信息 */
+  .fp-info { text-align: center; }
+  .fp-title {
+    font-family: 'Cormorant Garamond', serif; font-weight: 400;
+    font-size: 28px; color: #fff; letter-spacing: 1px;
+    margin-bottom: 6px;
+    text-shadow: 0.3px 0 0 rgba(255,0,0,0.1), -0.3px 0 0 rgba(0,100,255,0.1);
+  }
+  .fp-artist {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 13px; color: rgba(255,255,255,0.5); letter-spacing: 2px;
+  }
+
+  /* 进度条 */
+  .fp-progress-section { width: 100%; max-width: 320px; }
+  .fp-track {
+    height: 5px; border-radius: 3px;
+    background: rgba(255,255,255,0.08);
+    cursor: pointer; position: relative; margin-bottom: 8px;
+  }
+  .fp-fill {
+    height: 100%; border-radius: 3px;
+    background: rgba(255,255,255,0.5);
+    position: relative;
+    transition: width 0.1s linear;
+  }
+  .fp-fill::after {
+    content: ''; position: absolute; right: -7px; top: 50%;
+    transform: translateY(-50%) scale(0);
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
+  }
+  .fp-track:hover .fp-fill::after { transform: translateY(-50%) scale(1); }
+  .fp-times {
+    display: flex; justify-content: space-between;
+    font-family: 'Jost', sans-serif; font-size: 11px;
+    color: rgba(255,255,255,0.4); letter-spacing: 0.5px;
+  }
+
+  /* 播放控制按钮 */
+  .fp-controls {
+    display: flex; align-items: center; gap: 20px;
+  }
+  .fp-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(6px) saturate(1.3);
+    -webkit-backdrop-filter: blur(6px) saturate(1.3);
+    color: rgba(255,255,255,0.8);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.15);
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  .fp-btn:hover { background: rgba(255,255,255,0.12); transform: scale(1.08); color: #fff; }
+  .fp-btn:active { transform: scale(0.92); }
+  .fp-btn svg { width: 22px; height: 22px; }
+  .fp-btn.play {
+    width: 64px; height: 64px;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.18);
+  }
+  .fp-btn.play svg { width: 28px; height: 28px; }
+
+  /* —— 右侧：标签页（歌词/歌单） —— */
+  .fp-right {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    border-left: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* 标签切换 */
+  .fp-tabs {
+    display: flex; gap: 0; padding: 0 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .fp-tab {
+    padding: 18px 20px;
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(255,255,255,0.35); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+    background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .fp-tab:hover { color: rgba(255,255,255,0.6); }
+  .fp-tab.active {
+    color: #fff;
+    border-bottom-color: rgba(255,255,255,0.6);
+  }
+
+  /* 内容区 */
+  .fp-content { flex: 1; overflow: hidden; position: relative; }
+  .fp-pane { position: absolute; inset: 0; display: none; }
+  .fp-pane.active { display: block; }
+
+  /* 歌词面板 */
+  .fp-lyrics {
+    height: 100%; overflow-y: auto;
+    padding: 24px 32px;
+    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  .fp-lyrics::-webkit-scrollbar { width: 4px; }
+  .fp-lyrics::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .fp-lyric-line {
+    font-family: 'Noto Serif SC', serif; font-weight: 300;
+    font-size: 16px; line-height: 2.2;
+    color: rgba(255,255,255,0.25);
+    padding: 6px 0; text-align: center;
+    transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    cursor: pointer;
+  }
+  .fp-lyric-line:hover { color: rgba(255,255,255,0.5); }
+  .fp-lyric-line.active {
+    color: #fff; font-size: 19px; font-weight: 400;
+    text-shadow: 0 0 20px rgba(255,255,255,0.15);
+    transform: scale(1.02);
+  }
+
+  /* 歌单面板 */
+  .fp-playlist {
+    height: 100%; overflow-y: auto;
+    padding: 16px 20px;
+    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  .fp-playlist::-webkit-scrollbar { width: 4px; }
+  .fp-playlist::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .fp-song {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .fp-song:hover { background: rgba(255,255,255,0.05); }
+  .fp-song.active { background: rgba(255,255,255,0.08); }
+  .fp-song-art {
+    width: 44px; height: 44px; border-radius: 10px;
+    object-fit: cover; flex-shrink: 0;
+  }
+  .fp-song-info { flex: 1; min-width: 0; }
+  .fp-song-title {
+    font-family: 'Jost', sans-serif; font-weight: 400;
+    font-size: 14px; color: rgba(255,255,255,0.85);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .fp-song.active .fp-song-title { color: #fff; }
+  .fp-song-dur {
+    font-family: 'Jost', sans-serif; font-size: 11px;
+    color: rgba(255,255,255,0.35); flex-shrink: 0;
+  }
+  .fp-song-playing-icon {
+    display: none; width: 16px; height: 16px;
+    color: rgba(255,255,255,0.6); flex-shrink: 0;
+  }
+  .fp-song.active .fp-song-playing-icon { display: block; }
+  .fp-song.active .fp-song-dur { display: none; }
+
+  /* 响应式：窄屏切换为单列 */
+  @media (max-width: 768px) {
+    .fp-panel { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .fp-left { padding: 20px; }
+    .fp-art-wrap { width: 180px; height: 180px; }
+    .fp-title { font-size: 22px; }
+    .fp-right { border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
+  }
+
   /* ============ 登录门禁：毛玻璃 + 彩色渐变流动 ============ */
   .login-gate {
     position: fixed; inset: 0; z-index: 500;
@@ -591,6 +840,11 @@
         <feImage id="lgArtMap" result="map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none"/>
         <feDisplacementMap in="SourceGraphic" in2="map" scale="8" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
+      <!-- 全屏播放器大面板折射 -->
+      <filter id="lgFull" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+        <feImage id="lgFullMap" result="map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
     </defs>
   </svg>
 
@@ -683,6 +937,66 @@
         </svg>
         <div class="mp-vol-track" id="mpVolTrack">
           <div class="mp-vol-fill" id="mpVolFill" style="width:70%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 全屏液态玻璃音乐播放器 ============ -->
+  <div class="fp" id="fullPlayer">
+    <div class="fp-backdrop" id="fpBackdrop"></div>
+    <div class="fp-panel" id="fpPanel">
+      <!-- 关闭按钮 -->
+      <button class="fp-close" id="fpClose" aria-label="关闭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+
+      <!-- 左侧：专辑封面 + 控制 -->
+      <div class="fp-left">
+        <div class="fp-art-wrap">
+          <img class="fp-art" id="fpArt" src="photos/r1_1.jpg" alt="">
+        </div>
+        <div class="fp-info">
+          <div class="fp-title" id="fpTitle">Midnight Reverie</div>
+          <div class="fp-artist" id="fpArtist">Vladilena·Milizé</div>
+        </div>
+        <div class="fp-progress-section">
+          <div class="fp-track" id="fpTrack">
+            <div class="fp-fill" id="fpFill" style="width:0%"></div>
+          </div>
+          <div class="fp-times">
+            <span id="fpCurrent">0:00</span>
+            <span id="fpTotal">4:05</span>
+          </div>
+        </div>
+        <div class="fp-controls">
+          <button class="fp-btn" id="fpPrev" title="上一首" aria-label="上一首">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/></svg>
+          </button>
+          <button class="fp-btn play" id="fpPlay" title="播放/暂停" aria-label="播放">
+            <svg id="fpPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="fp-btn" id="fpNext" title="下一首" aria-label="下一首">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 右侧：歌词 / 歌单 -->
+      <div class="fp-right">
+        <div class="fp-tabs">
+          <button class="fp-tab active" id="tabLyrics">歌词</button>
+          <button class="fp-tab" id="tabPlaylist">歌单</button>
+        </div>
+        <div class="fp-content">
+          <!-- 歌词面板 -->
+          <div class="fp-pane active" id="paneLyrics">
+            <div class="fp-lyrics" id="fpLyrics"></div>
+          </div>
+          <!-- 歌单面板 -->
+          <div class="fp-pane" id="panePlaylist">
+            <div class="fp-playlist" id="fpPlaylist"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1049,6 +1363,18 @@
     // 专辑封面 (44px, radius 12)
     var artMap = generateDisplacementMap(44, 44, 12, 8);
     setFeImage('lgArtMap', artMap);
+
+    // 全屏播放器大面板
+    var fpPanel = document.getElementById('fpPanel');
+    if (fpPanel) {
+      var fpRect = fpPanel.getBoundingClientRect();
+      var fw = Math.round(fpRect.width);
+      var fh = Math.round(fpRect.height);
+      if (fw > 0 && fh > 0) {
+        var fullMap = generateDisplacementMap(fw, fh, 32, 40);
+        setFeImage('lgFullMap', fullMap);
+      }
+    }
   }
 
   function setFeImage(id, dataUrl) {
@@ -1060,11 +1386,97 @@
 
   // ============ 音乐播放器逻辑 ============
   var PLAYLIST = [
-    { title: 'Midnight Reverie', artist: 'Vladilena·Milizé', duration: 245, art: 'photos/r1_1.jpg' },
-    { title: 'Crimson Twilight',  artist: 'Vladilena·Milizé', duration: 198, art: 'photos/r2_2.jpg' },
-    { title: 'Silent Horizon',    artist: 'Vladilena·Milizé', duration: 312, art: 'photos/r3_3.jpg' },
-    { title: 'Ethereal Drift',    artist: 'Vladilena·Milizé', duration: 267, art: 'photos/r4_4.jpg' },
-    { title: 'Aurora Lament',     artist: 'Vladilena·Milizé', duration: 223, art: 'photos/r5_1.jpg' }
+    { title: 'Midnight Reverie', artist: 'Vladilena·Milizé', duration: 245, art: 'photos/r1_1.jpg',
+      lyrics: [
+        { t: 0,   text: '夜幕低垂 星光如纱' },
+        { t: 12,  text: '城市的霓虹在远方闪烁' },
+        { t: 26,  text: '我听见午夜的回响' },
+        { t: 42,  text: '像一首未完的梦' },
+        { t: 58,  text: '时间在指尖滑落' },
+        { t: 75,  text: '记忆如潮水涌来' },
+        { t: 92,  text: 'Midnight reverie, take me home' },
+        { t: 110, text: '在这寂静的深夜' },
+        { t: 128, text: '我与你共舞到天明' },
+        { t: 146, text: '风穿过空荡的街道' },
+        { t: 164, text: '带走了所有的喧嚣' },
+        { t: 182, text: '只剩下心跳的节奏' },
+        { t: 200, text: '和你温柔的呼吸' },
+        { t: 220, text: 'Midnight reverie, never let go' }
+      ]
+    },
+    { title: 'Crimson Twilight', artist: 'Vladilena·Milizé', duration: 198, art: 'photos/r2_2.jpg',
+      lyrics: [
+        { t: 0,   text: '绯红的暮光染红天际' },
+        { t: 14,  text: '最后一缕阳光消逝' },
+        { t: 28,  text: '我站在黄昏的边界' },
+        { t: 44,  text: '看你渐行渐远' },
+        { t: 60,  text: 'Crimson twilight, fading slow' },
+        { t: 76,  text: '余温还留在掌心' },
+        { t: 92,  text: '而夜色已漫过山岗' },
+        { t: 108, text: '如果时间能停驻' },
+        { t: 124, text: '我愿困在这瞬间' },
+        { t: 140, text: '让绯红永远燃烧' },
+        { t: 156, text: 'Crimson twilight, eternal glow' },
+        { t: 176, text: '在记忆深处不灭' }
+      ]
+    },
+    { title: 'Silent Horizon', artist: 'Vladilena·Milizé', duration: 312, art: 'photos/r3_3.jpg',
+      lyrics: [
+        { t: 0,   text: '寂静的地平线延伸' },
+        { t: 16,  text: '天地之间只有我' },
+        { t: 32,  text: '脚步回荡在空旷' },
+        { t: 50,  text: '风诉说着远方的故事' },
+        { t: 68,  text: 'Silent horizon, calling me' },
+        { t: 86,  text: '走向未知的旅途' },
+        { t: 104, text: '每一步都是新的开始' },
+        { t: 122, text: '云海翻涌如梦境' },
+        { t: 140, text: '阳光穿透了迷雾' },
+        { t: 158, text: '世界在脚下展开' },
+        { t: 176, text: 'Silent horizon, set me free' },
+        { t: 194, text: '不再畏惧远方' },
+        { t: 212, text: '让风带我去翱翔' },
+        { t: 230, text: '穿越无声的旷野' },
+        { t: 248, text: '找到属于自己的光' },
+        { t: 270, text: 'Silent horizon, home at last' }
+      ]
+    },
+    { title: 'Ethereal Drift', artist: 'Vladilena·Milizé', duration: 267, art: 'photos/r4_4.jpg',
+      lyrics: [
+        { t: 0,   text: '在虚空中漂浮' },
+        { t: 14,  text: '灵魂脱离了引力' },
+        { t: 28,  text: 'Ethereal drift, weightless' },
+        { t: 44,  text: '穿越星尘的河流' },
+        { t: 60,  text: '时间在此刻溶解' },
+        { t: 76,  text: '光影交错成永恒' },
+        { t: 92,  text: '我是一片飘散的云' },
+        { t: 108, text: 'Ethereal drift, boundless' },
+        { t: 124, text: '在宇宙的边缘漫游' },
+        { t: 140, text: '感受万物的呼吸' },
+        { t: 156, text: '虚无中诞生了光' },
+        { t: 172, text: '我在漂流中找到自己' },
+        { t: 190, text: 'Ethereal drift, coming home' },
+        { t: 210, text: '回到最初的宁静' },
+        { t: 240, text: '在星光中安眠' }
+      ]
+    },
+    { title: 'Aurora Lament', artist: 'Vladilena·Milizé', duration: 223, art: 'photos/r5_1.jpg',
+      lyrics: [
+        { t: 0,   text: '极光在夜空舞蹈' },
+        { t: 14,  text: '绿色的火焰燃烧' },
+        { t: 28,  text: 'Aurora lament, crying out' },
+        { t: 44,  text: '冰原上回荡着古老的歌' },
+        { t: 60,  text: '那是大地的叹息' },
+        { t: 76,  text: '星辰在聆听' },
+        { t: 92,  text: '万物静默如初' },
+        { t: 108, text: 'Aurora lament, farewell' },
+        { t: 124, text: '光影渐隐于晨曦' },
+        { t: 140, text: '留下无尽的思念' },
+        { t: 156, text: '在北极的尽头' },
+        { t: 172, text: '我听见你的低语' },
+        { t: 190, text: 'Aurora lament, until we meet' },
+        { t: 208, text: '在永恒的极光下' }
+      ]
+    }
   ];
 
   var currentTrack = 0;
@@ -1103,31 +1515,60 @@
   function loadTrack(idx) {
     currentTrack = idx;
     var t = PLAYLIST[idx];
+    // 更新迷你播放器
     art.src = t.art;
     titleEl.textContent = t.title;
     artistEl.textContent = t.artist;
     totalEl.textContent = formatTime(t.duration);
+    // 更新全屏播放器
+    var fpArt2 = document.getElementById('fpArt');
+    var fpTitle2 = document.getElementById('fpTitle');
+    var fpArtist2 = document.getElementById('fpArtist');
+    var fpTotal2 = document.getElementById('fpTotal');
+    if (fpArt2) fpArt2.src = t.art;
+    if (fpTitle2) fpTitle2.textContent = t.title;
+    if (fpArtist2) fpArtist2.textContent = t.artist;
+    if (fpTotal2) fpTotal2.textContent = formatTime(t.duration);
     progress = 0;
     updateProgress();
+    renderLyrics();
+    updatePlaylistActive();
   }
 
   function updateProgress() {
     var t = PLAYLIST[currentTrack];
     fill.style.width = (progress * 100) + '%';
     currentEl.textContent = formatTime(progress * t.duration);
+    // 同步全屏播放器进度条
+    var fpFill2 = document.getElementById('fpFill');
+    var fpCurrent2 = document.getElementById('fpCurrent');
+    if (fpFill2) fpFill2.style.width = (progress * 100) + '%';
+    if (fpCurrent2) fpCurrent2.textContent = formatTime(progress * t.duration);
+    // 同步歌词高亮
+    updateLyricHighlight();
   }
 
   function togglePlay() {
     isPlaying = !isPlaying;
+    var icon = isPlaying ? PAUSE_PATH : PLAY_PATH;
+    var label = isPlaying ? '暂停' : '播放';
+    playIcon.innerHTML = icon;
+    playBtn.setAttribute('aria-label', label);
     if (isPlaying) {
-      playIcon.innerHTML = PAUSE_PATH;
-      playBtn.setAttribute('aria-label', '暂停');
       art.classList.add('spinning');
       lastTick = performance.now();
     } else {
-      playIcon.innerHTML = PLAY_PATH;
-      playBtn.setAttribute('aria-label', '播放');
       art.classList.remove('spinning');
+    }
+    // 同步全屏播放器
+    var fpPlayIcon2 = document.getElementById('fpPlayIcon');
+    var fpPlayBtn2 = document.getElementById('fpPlay');
+    var fpArt2 = document.getElementById('fpArt');
+    if (fpPlayIcon2) fpPlayIcon2.innerHTML = icon;
+    if (fpPlayBtn2) fpPlayBtn2.setAttribute('aria-label', label);
+    if (fpArt2) {
+      if (isPlaying) fpArt2.classList.add('spinning');
+      else fpArt2.classList.remove('spinning');
     }
   }
 
@@ -1227,6 +1668,160 @@
     clearTimeout(lgTimer);
     lgTimer = setTimeout(setupLiquidGlass, 250);
   });
+
+  // ============ 全屏播放器逻辑 ============
+  var fullPlayer = document.getElementById('fullPlayer');
+  var fpBackdrop = document.getElementById('fpBackdrop');
+  var fpClose = document.getElementById('fpClose');
+  var fpPlayBtn = document.getElementById('fpPlay');
+  var fpPrevBtn = document.getElementById('fpPrev');
+  var fpNextBtn = document.getElementById('fpNext');
+  var fpTrackEl = document.getElementById('fpTrack');
+  var fpLyricsEl = document.getElementById('fpLyrics');
+  var fpPlaylistEl = document.getElementById('fpPlaylist');
+  var tabLyrics = document.getElementById('tabLyrics');
+  var tabPlaylist = document.getElementById('tabPlaylist');
+  var paneLyrics = document.getElementById('paneLyrics');
+  var panePlaylist = document.getElementById('panePlaylist');
+
+  // 点击迷你播放器专辑封面 → 打开全屏播放器
+  art.style.cursor = 'pointer';
+  art.addEventListener('click', function (e) {
+    e.stopPropagation();
+    openFullPlayer();
+  });
+  // 也可以点击标题区域打开
+  titleEl.style.cursor = 'pointer';
+  titleEl.addEventListener('click', openFullPlayer);
+
+  function openFullPlayer() {
+    fullPlayer.classList.add('open');
+    // 打开后重新生成 displacement map（面板尺寸已确定）
+    setTimeout(setupLiquidGlass, 100);
+  }
+  function closeFullPlayer() {
+    fullPlayer.classList.remove('open');
+  }
+
+  fpClose.addEventListener('click', closeFullPlayer);
+  fpBackdrop.addEventListener('click', closeFullPlayer);
+
+  // 全屏播放器控制（与迷你播放器共享状态）
+  fpPlayBtn.addEventListener('click', togglePlay);
+  fpNextBtn.addEventListener('click', nextTrack);
+  fpPrevBtn.addEventListener('click', prevTrack);
+
+  // 全屏进度条跳转
+  fpTrackEl.addEventListener('click', function (e) {
+    var rect = fpTrackEl.getBoundingClientRect();
+    progress = (e.clientX - rect.left) / rect.width;
+    progress = Math.max(0, Math.min(1, progress));
+    updateProgress();
+  });
+
+  // 标签页切换
+  tabLyrics.addEventListener('click', function () {
+    tabLyrics.classList.add('active');
+    tabPlaylist.classList.remove('active');
+    paneLyrics.classList.add('active');
+    panePlaylist.classList.remove('active');
+  });
+  tabPlaylist.addEventListener('click', function () {
+    tabPlaylist.classList.add('active');
+    tabLyrics.classList.remove('active');
+    panePlaylist.classList.add('active');
+    paneLyrics.classList.remove('active');
+  });
+
+  // ESC 关闭全屏播放器（不与灯箱冲突：灯箱关闭时才响应）
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && fullPlayer.classList.contains('open')) {
+      closeFullPlayer();
+    }
+  });
+
+  // ============ 歌词渲染 + 同步高亮 ============
+  function renderLyrics() {
+    if (!fpLyricsEl) return;
+    var t = PLAYLIST[currentTrack];
+    var html = '';
+    if (t.lyrics) {
+      t.lyrics.forEach(function (line, i) {
+        html += '<div class="fp-lyric-line" data-idx="' + i + '" data-time="' + line.t + '">' + line.text + '</div>';
+      });
+    }
+    fpLyricsEl.innerHTML = html;
+    // 点击歌词跳转
+    fpLyricsEl.querySelectorAll('.fp-lyric-line').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var time = parseFloat(this.getAttribute('data-time'));
+        var dur = PLAYLIST[currentTrack].duration;
+        progress = time / dur;
+        updateProgress();
+      });
+    });
+  }
+
+  var lastLyricIdx = -1;
+  function updateLyricHighlight() {
+    if (!fpLyricsEl) return;
+    var t = PLAYLIST[currentTrack];
+    if (!t.lyrics) return;
+    var currentSec = progress * t.duration;
+    var idx = -1;
+    for (var i = 0; i < t.lyrics.length; i++) {
+      if (currentSec >= t.lyrics[i].t) idx = i;
+      else break;
+    }
+    if (idx !== lastLyricIdx) {
+      lastLyricIdx = idx;
+      var lines = fpLyricsEl.querySelectorAll('.fp-lyric-line');
+      lines.forEach(function (el, i) {
+        el.classList.toggle('active', i === idx);
+      });
+      // 自动滚动到当前歌词
+      if (idx >= 0 && lines[idx]) {
+        var containerH = fpLyricsEl.clientHeight;
+        var lineTop = lines[idx].offsetTop;
+        var lineH = lines[idx].offsetHeight;
+        fpLyricsEl.scrollTo({ top: lineTop - containerH / 2 + lineH / 2, behavior: 'smooth' });
+      }
+    }
+  }
+
+  // ============ 歌单渲染 ============
+  function renderPlaylist() {
+    if (!fpPlaylistEl) return;
+    var html = '';
+    var playingSvg = '<svg class="fp-song-playing-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>';
+    PLAYLIST.forEach(function (t, i) {
+      html += '<div class="fp-song" data-idx="' + i + '">' +
+        '<img class="fp-song-art" src="' + t.art + '" alt="">' +
+        '<div class="fp-song-info"><div class="fp-song-title">' + t.title + '</div></div>' +
+        '<span class="fp-song-dur">' + formatTime(t.duration) + '</span>' +
+        playingSvg +
+        '</div>';
+    });
+    fpPlaylistEl.innerHTML = html;
+    fpPlaylistEl.querySelectorAll('.fp-song').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-idx'));
+        loadTrack(idx);
+        if (!isPlaying) togglePlay();
+      });
+    });
+    updatePlaylistActive();
+  }
+
+  function updatePlaylistActive() {
+    if (!fpPlaylistEl) return;
+    fpPlaylistEl.querySelectorAll('.fp-song').forEach(function (el, i) {
+      el.classList.toggle('active', i === currentTrack);
+    });
+  }
+
+  // 初始化歌单
+  renderPlaylist();
 })();
 </script>
 </body>
