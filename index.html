@@ -552,7 +552,9 @@
   function photoEl(src, isFirstRow) {
     // 不使用 loading="lazy"：流动画廊所有图片都需要预加载，否则循环时出现黑块
     var extra = isFirstRow ? ' fetchpriority="high"' : '';
-    return '<div class="photo"><img alt=""' + extra + ' decoding="async" src="' + src + '"></div>';
+    // 灯箱使用原图（未压缩、未裁切），画廊仍用压缩图保证流畅
+    var full = src.replace('photos/', 'photos_original/');
+    return '<div class="photo" data-full="' + full + '"><img alt=""' + extra + ' decoding="async" src="' + src + '"></div>';
   }
   PHOTOS.forEach(function (photos, i) {
     const setHTML = photos.map(function (p) { return photoEl(p, i === 0); }).join('');
@@ -651,10 +653,14 @@
     setTimeout(function () { lightboxImg.src = ''; }, 400);
   }
 
-  // 点击任意照片放大
+  // 点击任意照片放大 —— 灯箱显示原图（未裁切），而非画廊压缩图
   gallery.addEventListener('click', function (e) {
     const img = e.target.closest('.photo img');
-    if (img && img.src) openLightbox(img.src);
+    if (!img) return;
+    const photo = img.closest('.photo');
+    // 优先使用 data-full 原图路径，回退到画廊图 src
+    if (photo && photo.dataset.full) openLightbox(photo.dataset.full);
+    else if (img.src) openLightbox(img.src);
   });
   // 点击背景或关闭按钮关闭
   lightbox.addEventListener('click', function (e) {
