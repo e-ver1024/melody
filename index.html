@@ -549,11 +549,12 @@
   const gallery = document.getElementById('gallery');
 
   // ============ 构建五行 ============
-  function photoEl(src) {
-    return '<div class="photo"><img alt="" src="' + src + '"></div>';
+  function photoEl(src, isFirstRow) {
+    var fp = isFirstRow ? ' fetchpriority="high"' : '';
+    return '<div class="photo"><img alt="" loading="lazy"' + fp + ' decoding="async" src="' + src + '"></div>';
   }
   PHOTOS.forEach(function (photos, i) {
-    const setHTML = photos.map(photoEl).join('');
+    const setHTML = photos.map(function (p) { return photoEl(p, i === 0); }).join('');
     const row = document.createElement('div');
     row.className = 'row';
     row.dataset.row = i;
