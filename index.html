@@ -121,38 +121,9 @@
     width: 100%; height: 100%; object-fit: cover; display: block;
     opacity: 0;
     transition: transform 0.6s cubic-bezier(0.16,1,0.3,1),
-                filter 0.8s ease,
                 opacity 1s ease;
   }
   .photo.loaded img { opacity: 1; }
-
-  /* —— 色调分区：用滤镜强制各行视觉节奏 —— */
-  /* 第1行 霓虹夜景/极光（高饱和冷色调） */
-  .row[data-row="0"] .photo { background: linear-gradient(120deg,#06243a,#0a3b66,#2b0f55); }
-  .row[data-row="0"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(1.4) contrast(1.08) hue-rotate(-12deg); }
-  /* 第2行 暖阳/人像特写（橙黄暖色调） */
-  .row[data-row="1"] .photo { background: linear-gradient(120deg,#3a1d06,#7a3d0a,#caa14a); }
-  .row[data-row="1"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(1.18) contrast(1.04) sepia(0.12); }
-  /* 第3行 黑白人文/静物（高对比消色） */
-  .row[data-row="2"] .photo { background: linear-gradient(120deg,#1a1a1a,#4a4a4a,#9a9a9a); }
-  .row[data-row="2"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) grayscale(1) contrast(1.18); }
-  /* 第4行 低饱和复古建筑（莫兰迪色系） */
-  .row[data-row="3"] .photo { background: linear-gradient(120deg,#3b3530,#6e6258,#a89c8c); }
-  .row[data-row="3"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(0.5) brightness(0.97) sepia(0.14) contrast(0.98); }
-  /* 第5行 宏大冰川/云海（长曝光柔色调） */
-  .row[data-row="4"] .photo { background: linear-gradient(120deg,#243640,#3f5a66,#8fb0bf); }
-  .row[data-row="4"] .photo img { filter: brightness(var(--b,1)) blur(var(--blur,0px)) saturate(0.82) brightness(1.06) contrast(0.94) blur(0.4px); }
-
-  /* 入场加载叙事：高斯模糊 20px → 清晰 */
-  body.loading .photo img { --blur: 20px; }
-
-  /* —— 氛围色罩（soft-light 轻染，强化基调不破坏细节） —— */
-  .row-tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; opacity: 0.55; z-index: 2; }
-  .row[data-row="0"] .row-tint { background: linear-gradient(110deg, rgba(60,190,255,0.45), rgba(150,80,255,0.45)); }
-  .row[data-row="1"] .row-tint { background: linear-gradient(110deg, rgba(255,170,80,0.4), rgba(255,110,40,0.4)); }
-  .row[data-row="2"] .row-tint { background: linear-gradient(110deg, rgba(255,255,255,0.12), rgba(40,40,40,0.25)); }
-  .row[data-row="3"] .row-tint { background: linear-gradient(110deg, rgba(200,188,168,0.35), rgba(160,150,138,0.35)); }
-  .row[data-row="4"] .row-tint { background: linear-gradient(110deg, rgba(170,205,228,0.35), rgba(205,220,230,0.35)); }
 
   /* —— 上下渐隐遮罩（Feather Edge）：行间呼吸分割 —— */
   .row-feather {
@@ -173,8 +144,7 @@
   .scan-bottom { bottom: 0; transform: translateY(4px); }
   .row.hovered .scan { opacity: 1; transform: translateY(0); }
 
-  /* 悬停：该行整体放大 1.03 + 亮度 +10% */
-  .row.hovered { --b: 1.1; }
+  /* 悬停：该行整体放大 1.03 */
   .row.hovered .photo img { transform: scale(1.03); }
 
   /* 进场渐显整页 */
@@ -186,7 +156,7 @@
   }
 </style>
 </head>
-<body class="loading">
+<body>
 
   <div class="grain"></div>
 
@@ -254,7 +224,6 @@
         '<div class="set">' + setHTML + '</div>' +
         '<div class="set">' + setHTML + '</div>' +
       '</div>' +
-      '<div class="row-tint"></div>' +
       '<div class="row-feather"></div>' +
       '<div class="scan scan-top"></div>' +
       '<div class="scan scan-bottom"></div>';
@@ -356,10 +325,8 @@
   }
   requestAnimationFrame(loop);
 
-  // ============ 入场加载叙事：从梦境中醒来 ============
-  // 0.5s 后解除模糊 → 0.8s 内清晰聚焦，同时速度从静止缓入至既定值
+  // ============ 入场启动：从静止缓入至既定速度 ============
   setTimeout(function () {
-    document.body.classList.remove('loading');
     document.body.classList.add('awake');
     rows.forEach(function (r) { startTween(r, 1, 800, BEZ_IN_LOAD); });
   }, 500);
