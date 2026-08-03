@@ -101,7 +101,7 @@
   /* ============ 五行流动照片区 ============ */
   .gallery {
     position: relative; flex: 1; overflow: hidden; z-index: 1;
-    --row-h: calc((100vh - 108px) / 5);
+    --row-h: calc((100vh - 196px) / 5);
   }
   .row {
     position: relative; height: var(--row-h); overflow: hidden;
@@ -235,6 +235,178 @@
 
   @media (prefers-reduced-motion: reduce) {
     .grain { animation: none; }
+  }
+
+  /* ============ 液态玻璃音乐播放器 ============ */
+  .music-player {
+    position: relative; flex-shrink: 0;
+    padding: 8px 16px 12px;
+    z-index: 100;
+  }
+
+  /* —— 主玻璃条 —— */
+  .mp-bar {
+    position: relative;
+    height: 64px;
+    border-radius: 20px;
+    display: flex; align-items: center;
+    gap: 14px; padding: 0 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* 液态玻璃核心：SVG 折射位移 + 模糊 + 饱和度增强 */
+    backdrop-filter: url(#lgBar) blur(10px) saturate(1.8);
+    -webkit-backdrop-filter: blur(10px) saturate(1.8);
+    box-shadow:
+      0 6px 28px rgba(0, 0, 0, 0.35),
+      inset 0 1px 1px rgba(255, 255, 255, 0.25),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  /* 边缘高光（specular rim light）—— 模拟液态玻璃边缘折射光线 */
+  .mp-bar::before {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 20px; pointer-events: none; z-index: 1;
+    background:
+      linear-gradient(135deg,
+        rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 25%,
+        transparent 45%, transparent 55%,
+        rgba(255,255,255,0.04) 75%, rgba(255,255,255,0.1) 100%);
+  }
+  /* 跟随光标的径向高光 */
+  .mp-bar::after {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 20px; pointer-events: none; z-index: 1;
+    background: radial-gradient(180px circle at var(--mpx, 50%) var(--mpy, 50%),
+      rgba(255,255,255,0.1), transparent 55%);
+    transition: opacity 0.4s ease;
+  }
+
+  /* —— 专辑封面（液态玻璃容器）—— */
+  .mp-art-wrap {
+    position: relative;
+    width: 44px; height: 44px;
+    border-radius: 12px; overflow: hidden;
+    flex-shrink: 0; z-index: 2;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: url(#lgArt) blur(4px) saturate(1.4);
+    -webkit-backdrop-filter: blur(4px) saturate(1.4);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  }
+  .mp-art {
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 10px;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mp-bar:hover .mp-art { transform: scale(1.06); }
+  /* 播放时封面旋转 */
+  .mp-art.spinning { animation: spinArt 12s linear infinite; }
+  @keyframes spinArt { to { transform: rotate(360deg); } }
+
+  /* —— 曲目信息 —— */
+  .mp-info {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0; width: 150px; flex-shrink: 0; z-index: 2;
+  }
+  .mp-title {
+    font-family: 'Jost', sans-serif; font-weight: 400;
+    font-size: 13px; color: #fff; letter-spacing: 0.5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    /* 色差 aberration */
+    text-shadow: 0.3px 0 0 rgba(255,0,0,0.15), -0.3px 0 0 rgba(0,100,255,0.15);
+  }
+  .mp-artist {
+    font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 10px; color: rgba(255, 255, 255, 0.5); letter-spacing: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* —— 播放控制按钮（液态玻璃）—— */
+  .mp-controls {
+    display: flex; align-items: center; gap: 8px; z-index: 2;
+  }
+  .mp-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: url(#lgBtn) blur(4px) saturate(1.4);
+    -webkit-backdrop-filter: blur(4px) saturate(1.4);
+    color: rgba(255, 255, 255, 0.8);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mp-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+    color: #fff;
+  }
+  .mp-btn:active { transform: scale(0.92); }
+  .mp-btn svg { width: 16px; height: 16px; }
+
+  .mp-btn.play {
+    width: 44px; height: 44px;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+    backdrop-filter: url(#lgPlay) blur(6px) saturate(1.5);
+    -webkit-backdrop-filter: blur(6px) saturate(1.5);
+  }
+  .mp-btn.play svg { width: 20px; height: 20px; }
+  .mp-btn.play:hover { background: rgba(255, 255, 255, 0.18); }
+
+  /* —— 进度条 —— */
+  .mp-progress-wrap {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    z-index: 2; min-width: 0;
+  }
+  .mp-time {
+    font-family: 'Jost', sans-serif; font-size: 10px;
+    color: rgba(255, 255, 255, 0.45); letter-spacing: 0.5px;
+    flex-shrink: 0; min-width: 32px; text-align: center;
+  }
+  .mp-track {
+    flex: 1; height: 4px; border-radius: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    position: relative; cursor: pointer;
+  }
+  .mp-fill {
+    height: 100%; border-radius: 2px;
+    background: rgba(255, 255, 255, 0.55);
+    position: relative;
+    transition: width 0.1s linear;
+  }
+  .mp-fill::after {
+    content: ''; position: absolute; right: -6px; top: 50%;
+    transform: translateY(-50%) scale(0);
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease;
+  }
+  .mp-track:hover .mp-fill::after { transform: translateY(-50%) scale(1); }
+
+  /* —— 音量控制 —— */
+  .mp-volume-wrap {
+    display: flex; align-items: center; gap: 8px;
+    z-index: 2; flex-shrink: 0;
+  }
+  .mp-vol-icon {
+    width: 18px; height: 18px; color: rgba(255, 255, 255, 0.5);
+    flex-shrink: 0; cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .mp-vol-icon:hover { color: rgba(255, 255, 255, 0.8); }
+  .mp-vol-track {
+    width: 70px; height: 4px; border-radius: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer; position: relative;
+  }
+  .mp-vol-fill {
+    height: 100%; border-radius: 2px;
+    background: rgba(255, 255, 255, 0.45);
   }
 
   /* ============ 登录门禁：毛玻璃 + 彩色渐变流动 ============ */
@@ -395,6 +567,33 @@
 </head>
 <body>
 
+  <!-- ============ 液态玻璃 SVG 位移滤镜定义 ============ -->
+  <!-- 核心：feDisplacementMap 根据 displacement map 对背景做折射位移，模拟苹果 Liquid Glass 效果 -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+    <defs>
+      <!-- 主玻璃条：圆角矩形折射 -->
+      <filter id="lgBar" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+        <feImage id="lgBarMap" result="map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="30" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <!-- 圆形按钮（36px）折射 -->
+      <filter id="lgBtn" color-interpolation-filters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
+        <feImage id="lgBtnMap" result="map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <!-- 播放按钮（44px 圆形）折射 -->
+      <filter id="lgPlay" color-interpolation-filters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
+        <feImage id="lgPlayMap" result="map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <!-- 专辑封面（44px 圆角矩形）折射 -->
+      <filter id="lgArt" color-interpolation-filters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
+        <feImage id="lgArtMap" result="map" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
   <!-- 登录门禁：毛玻璃 + 彩色渐变流动 -->
   <div class="login-gate" id="loginGate">
     <div class="login-gradient"></div>
@@ -444,6 +643,50 @@
   </header>
 
   <main id="gallery" class="gallery"></main>
+
+  <!-- ============ 液态玻璃音乐播放器 ============ -->
+  <div class="music-player" id="musicPlayer">
+    <div class="mp-bar" id="mpBar">
+      <!-- 专辑封面 -->
+      <div class="mp-art-wrap">
+        <img class="mp-art" id="mpArt" src="photos/r1_1.jpg" alt="">
+      </div>
+      <!-- 曲目信息 -->
+      <div class="mp-info">
+        <div class="mp-title" id="mpTitle">Midnight Reverie</div>
+        <div class="mp-artist" id="mpArtist">Vladilena·Milizé</div>
+      </div>
+      <!-- 播放控制 -->
+      <div class="mp-controls">
+        <button class="mp-btn" id="mpPrev" title="上一首" aria-label="上一首">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/></svg>
+        </button>
+        <button class="mp-btn play" id="mpPlay" title="播放/暂停" aria-label="播放">
+          <svg id="mpPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="mp-btn" id="mpNext" title="下一首" aria-label="下一首">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+      </div>
+      <!-- 进度条 -->
+      <div class="mp-progress-wrap">
+        <span class="mp-time" id="mpCurrent">0:00</span>
+        <div class="mp-track" id="mpTrack">
+          <div class="mp-fill" id="mpFill" style="width:0%"></div>
+        </div>
+        <span class="mp-time" id="mpTotal">4:05</span>
+      </div>
+      <!-- 音量 -->
+      <div class="mp-volume-wrap">
+        <svg class="mp-vol-icon" id="mpVolIcon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+        </svg>
+        <div class="mp-vol-track" id="mpVolTrack">
+          <div class="mp-vol-fill" id="mpVolFill" style="width:70%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="vignette"></div>
 
@@ -711,6 +954,278 @@
   window.addEventListener('resize', function () {
     clearTimeout(rzT);
     rzT = setTimeout(measure, 150);
+  });
+})();
+</script>
+
+<script>
+// ============ 液态玻璃 displacement map 生成 + 音乐播放器 ============
+(function () {
+  'use strict';
+
+  // ============ 生成圆角矩形 displacement map ============
+  // 核心原理：根据像素到圆角矩形边缘的距离和角度，计算折射位移向量
+  // 编码为 RGB：R=X位移，G=Y位移，128=无位移
+  // SVG feDisplacementMap 读取此图对背景做像素级位移，模拟玻璃边缘折射
+  function generateDisplacementMap(w, h, radius, maxDisp) {
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    var imgData = ctx.createImageData(w, h);
+    var data = imgData.data;
+    var edgeW = Math.max(radius, 1);
+    var r = Math.min(radius, Math.min(w, h) / 2);
+
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var dx = 0, dy = 0;
+
+        // 判断是否在圆角区域
+        var cx = -1, cy = -1;
+        if (x < r && y < r) { cx = r; cy = r; }
+        else if (x >= w - r && y < r) { cx = w - r - 1; cy = r; }
+        else if (x < r && y >= h - r) { cx = r; cy = h - r - 1; }
+        else if (x >= w - r && y >= h - r) { cx = w - r - 1; cy = h - r - 1; }
+
+        if (cx >= 0) {
+          // 圆角区域：从圆角中心向外辐射的位移
+          var ddx = x - cx, ddy = y - cy;
+          var dist = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (dist < r && dist > 0.1) {
+            // 凸面玻璃：边缘处折射最强（dist≈r），中心无折射（dist≈0）
+            var f = dist / r;
+            var mag = f * maxDisp;
+            dx = (ddx / dist) * mag;
+            dy = (ddy / dist) * mag;
+          }
+        } else {
+          // 直边区域：垂直于边缘的位移
+          var dL = x, dR = w - 1 - x, dT = y, dB = h - 1 - y;
+          var m = Math.min(dL, dR, dT, dB);
+          if (m < edgeW) {
+            var f2 = 1 - m / edgeW;
+            var mag2 = f2 * maxDisp;
+            if (m === dL) dx = mag2;
+            else if (m === dR) dx = -mag2;
+            else if (m === dT) dy = mag2;
+            else dy = -mag2;
+          }
+        }
+
+        var idx = (y * w + x) * 4;
+        data[idx] = Math.max(0, Math.min(255, Math.round(128 + dx)));
+        data[idx + 1] = Math.max(0, Math.min(255, Math.round(128 + dy)));
+        data[idx + 2] = 128;
+        data[idx + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return canvas.toDataURL();
+  }
+
+  // ============ 为每个液态玻璃元素生成并应用 displacement map ============
+  function setupLiquidGlass() {
+    var bar = document.getElementById('mpBar');
+    if (!bar) return;
+
+    // 主玻璃条
+    var barRect = bar.getBoundingClientRect();
+    var bw = Math.round(barRect.width);
+    var bh = Math.round(barRect.height);
+    if (bw > 0 && bh > 0) {
+      var barMap = generateDisplacementMap(bw, bh, 20, 30);
+      setFeImage('lgBarMap', barMap);
+    }
+
+    // 圆形按钮 (36px)
+    var btnMap = generateDisplacementMap(36, 36, 18, 10);
+    setFeImage('lgBtnMap', btnMap);
+
+    // 播放按钮 (44px)
+    var playMap = generateDisplacementMap(44, 44, 22, 14);
+    setFeImage('lgPlayMap', playMap);
+
+    // 专辑封面 (44px, radius 12)
+    var artMap = generateDisplacementMap(44, 44, 12, 8);
+    setFeImage('lgArtMap', artMap);
+  }
+
+  function setFeImage(id, dataUrl) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.setAttribute('href', dataUrl);
+    el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', dataUrl);
+  }
+
+  // ============ 音乐播放器逻辑 ============
+  var PLAYLIST = [
+    { title: 'Midnight Reverie', artist: 'Vladilena·Milizé', duration: 245, art: 'photos/r1_1.jpg' },
+    { title: 'Crimson Twilight',  artist: 'Vladilena·Milizé', duration: 198, art: 'photos/r2_2.jpg' },
+    { title: 'Silent Horizon',    artist: 'Vladilena·Milizé', duration: 312, art: 'photos/r3_3.jpg' },
+    { title: 'Ethereal Drift',    artist: 'Vladilena·Milizé', duration: 267, art: 'photos/r4_4.jpg' },
+    { title: 'Aurora Lament',     artist: 'Vladilena·Milizé', duration: 223, art: 'photos/r5_1.jpg' }
+  ];
+
+  var currentTrack = 0;
+  var isPlaying = false;
+  var progress = 0;
+  var volume = 0.7;
+  var lastTick = 0;
+  var rafId = null;
+
+  // DOM
+  var art = document.getElementById('mpArt');
+  var titleEl = document.getElementById('mpTitle');
+  var artistEl = document.getElementById('mpArtist');
+  var playIcon = document.getElementById('mpPlayIcon');
+  var playBtn = document.getElementById('mpPlay');
+  var prevBtn = document.getElementById('mpPrev');
+  var nextBtn = document.getElementById('mpNext');
+  var fill = document.getElementById('mpFill');
+  var trackEl = document.getElementById('mpTrack');
+  var currentEl = document.getElementById('mpCurrent');
+  var totalEl = document.getElementById('mpTotal');
+  var volTrack = document.getElementById('mpVolTrack');
+  var volFill = document.getElementById('mpVolFill');
+  var volIcon = document.getElementById('mpVolIcon');
+  var mpBar = document.getElementById('mpBar');
+
+  var PLAY_PATH = '<path d="M8 5v14l11-7z"/>';
+  var PAUSE_PATH = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+
+  function formatTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = Math.floor(sec % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function loadTrack(idx) {
+    currentTrack = idx;
+    var t = PLAYLIST[idx];
+    art.src = t.art;
+    titleEl.textContent = t.title;
+    artistEl.textContent = t.artist;
+    totalEl.textContent = formatTime(t.duration);
+    progress = 0;
+    updateProgress();
+  }
+
+  function updateProgress() {
+    var t = PLAYLIST[currentTrack];
+    fill.style.width = (progress * 100) + '%';
+    currentEl.textContent = formatTime(progress * t.duration);
+  }
+
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    if (isPlaying) {
+      playIcon.innerHTML = PAUSE_PATH;
+      playBtn.setAttribute('aria-label', '暂停');
+      art.classList.add('spinning');
+      lastTick = performance.now();
+    } else {
+      playIcon.innerHTML = PLAY_PATH;
+      playBtn.setAttribute('aria-label', '播放');
+      art.classList.remove('spinning');
+    }
+  }
+
+  function nextTrack() {
+    loadTrack((currentTrack + 1) % PLAYLIST.length);
+    if (isPlaying) { lastTick = performance.now(); art.classList.add('spinning'); }
+  }
+
+  function prevTrack() {
+    loadTrack((currentTrack - 1 + PLAYLIST.length) % PLAYLIST.length);
+    if (isPlaying) { lastTick = performance.now(); art.classList.add('spinning'); }
+  }
+
+  // 事件绑定
+  playBtn.addEventListener('click', togglePlay);
+  nextBtn.addEventListener('click', nextTrack);
+  prevBtn.addEventListener('click', prevTrack);
+
+  // 点击进度条跳转
+  trackEl.addEventListener('click', function (e) {
+    var rect = trackEl.getBoundingClientRect();
+    progress = (e.clientX - rect.left) / rect.width;
+    progress = Math.max(0, Math.min(1, progress));
+    updateProgress();
+  });
+
+  // 音量控制
+  volTrack.addEventListener('click', function (e) {
+    var rect = volTrack.getBoundingClientRect();
+    volume = (e.clientX - rect.left) / rect.width;
+    volume = Math.max(0, Math.min(1, volume));
+    volFill.style.width = (volume * 100) + '%';
+    updateVolIcon();
+  });
+
+  var VOL_HIGH = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+  var VOL_LOW = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>';
+  var VOL_MUTE = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+
+  function updateVolIcon() {
+    if (volume === 0) volIcon.innerHTML = VOL_MUTE;
+    else if (volume < 0.5) volIcon.innerHTML = VOL_LOW;
+    else volIcon.innerHTML = VOL_HIGH;
+  }
+
+  volIcon.addEventListener('click', function () {
+    if (volume > 0) { volume = 0; } else { volume = 0.7; }
+    volFill.style.width = (volume * 100) + '%';
+    updateVolIcon();
+  });
+
+  // 玻璃条光标跟随高光
+  if (mpBar) {
+    mpBar.addEventListener('mousemove', function (e) {
+      var r = mpBar.getBoundingClientRect();
+      mpBar.style.setProperty('--mpx', (e.clientX - r.left) + 'px');
+      mpBar.style.setProperty('--mpy', (e.clientY - r.top) + 'px');
+    });
+  }
+
+  // 播放进度循环
+  function tick(now) {
+    if (isPlaying) {
+      var dt = (now - lastTick) / 1000;
+      lastTick = now;
+      var t = PLAYLIST[currentTrack];
+      progress += dt / t.duration;
+      if (progress >= 1) {
+        progress = 0;
+        nextTrack();
+      }
+      updateProgress();
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  // 键盘快捷键：空格播放/暂停
+  document.addEventListener('keydown', function (e) {
+    if (e.key === ' ' && document.activeElement.tagName !== 'INPUT') {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  // 初始化
+  loadTrack(0);
+  volFill.style.width = (volume * 100) + '%';
+  updateVolIcon();
+  rafId = requestAnimationFrame(tick);
+
+  // 延迟生成 displacement map（等待布局完成）
+  setTimeout(setupLiquidGlass, 200);
+
+  // 窗口尺寸变化时重新生成主玻璃条的 displacement map
+  var lgTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(lgTimer);
+    lgTimer = setTimeout(setupLiquidGlass, 250);
   });
 })();
 </script>
