@@ -1194,12 +1194,11 @@
       '<div class="track">' +
         '<div class="set">' + setHTML + '</div>' +
         '<div class="set">' + setHTML + '</div>' +
-        // 第三组延迟创建，减少初始 20 个 img 节点
+        '<div class="set">' + setHTML + '</div>' +
       '</div>' +
       '<div class="row-feather"></div>' +
       '<div class="scan scan-top"></div>' +
       '<div class="scan scan-bottom"></div>';
-    row.dataset.needsThirdSet = '1';
     gallery.appendChild(row);
   });
 
@@ -1209,26 +1208,6 @@
     if (img.complete) done();
     else { img.addEventListener('load', done); img.addEventListener('error', done); }
   });
-
-  // ============ 延迟创建第三组复制集（首屏图片加载后） ============
-  function addThirdSets() {
-    var rows = gallery.querySelectorAll('.row[data-needs-third-set]');
-    rows.forEach(function (row) {
-      var track = row.querySelector('.track');
-      var firstSet = track.querySelector('.set');
-      if (firstSet && track.children.length < 3) {
-        var thirdSet = firstSet.cloneNode(true);
-        track.appendChild(thirdSet);
-      }
-      row.removeAttribute('data-needs-third-set');
-    });
-  }
-  // 用 requestIdleCallback 在浏览器空闲时创建第三组
-  if (window.requestIdleCallback) {
-    window.requestIdleCallback(function () { setTimeout(addThirdSets, 500); }, { timeout: 3000 });
-  } else {
-    setTimeout(addThirdSets, 1500);
-  }
 
   // ============ cubic-bezier 求值器 ============
   function makeBezier(x1, y1, x2, y2) {
