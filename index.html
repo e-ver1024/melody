@@ -237,28 +237,76 @@
     .grain { animation: none; }
   }
 
-  /* ============ 登录门禁：毛玻璃 ============ */
+  /* ============ 登录门禁：毛玻璃 + 彩色渐变流动 ============ */
   .login-gate {
     position: fixed; inset: 0; z-index: 500;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(8, 8, 10, 0.55);
-    backdrop-filter: blur(40px) saturate(1.1);
-    -webkit-backdrop-filter: blur(40px) saturate(1.1);
+    overflow: hidden;
     transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;
   }
   .login-gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+  /* 流动彩色渐变背景层 */
+  .login-gradient {
+    position: absolute; inset: -60%;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(233, 69, 96, 0.75), transparent 38%),
+      radial-gradient(circle at 85% 75%, rgba(83, 52, 131, 0.75), transparent 38%),
+      radial-gradient(circle at 50% 50%, rgba(58, 134, 255, 0.65), transparent 32%),
+      radial-gradient(circle at 25% 85%, rgba(255, 190, 11, 0.55), transparent 32%),
+      radial-gradient(circle at 75% 15%, rgba(251, 86, 7, 0.65), transparent 32%),
+      radial-gradient(circle at 60% 40%, rgba(114, 9, 183, 0.65), transparent 32%),
+      radial-gradient(circle at 35% 60%, rgba(6, 255, 165, 0.4), transparent 28%),
+      #0a0a14;
+    filter: blur(55px) saturate(1.4);
+    animation: flowMove 18s ease-in-out infinite alternate;
+  }
+  /* 第二层渐变，不同速度，增加深度 */
+  .login-gradient-2 {
+    position: absolute; inset: -60%;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 70% 30%, rgba(255, 0, 110, 0.4), transparent 30%),
+      radial-gradient(circle at 30% 70%, rgba(0, 245, 212, 0.35), transparent 30%),
+      radial-gradient(circle at 90% 50%, rgba(251, 86, 7, 0.3), transparent 25%);
+    filter: blur(45px) saturate(1.2);
+    animation: flowMove2 24s ease-in-out infinite alternate;
+    mix-blend-mode: screen;
+  }
+  @keyframes flowMove {
+    0%   { transform: rotate(0deg) scale(1) translate(0, 0); }
+    25%  { transform: rotate(60deg) scale(1.12) translate(3%, -4%); }
+    50%  { transform: rotate(140deg) scale(0.92) translate(-3%, 3%); }
+    75%  { transform: rotate(220deg) scale(1.08) translate(4%, 1%); }
+    100% { transform: rotate(330deg) scale(1) translate(-2%, -3%); }
+  }
+  @keyframes flowMove2 {
+    0%   { transform: rotate(0deg) scale(1.1) translate(0, 0); }
+    33%  { transform: rotate(-80deg) scale(0.9) translate(-4%, 2%); }
+    66%  { transform: rotate(-180deg) scale(1.15) translate(3%, -3%); }
+    100% { transform: rotate(-300deg) scale(1) translate(-2%, 4%); }
+  }
+
+  /* 毛玻璃遮罩层：在渐变之上，卡片之下 */
+  .login-frost {
+    position: absolute; inset: 0; z-index: 1;
+    background: rgba(10, 10, 18, 0.25);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  }
+
   .login-card {
-    position: relative;
+    position: relative; z-index: 2;
     width: 380px; max-width: 90vw;
     padding: 48px 40px 40px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 20px;
-    backdrop-filter: blur(28px) saturate(1.3);
-    -webkit-backdrop-filter: blur(28px) saturate(1.3);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(30px) saturate(1.4);
+    -webkit-backdrop-filter: blur(30px) saturate(1.4);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
     text-align: center;
     transform: scale(0.94);
     opacity: 0;
@@ -347,8 +395,11 @@
 </head>
 <body>
 
-  <!-- 登录门禁：毛玻璃 -->
+  <!-- 登录门禁：毛玻璃 + 彩色渐变流动 -->
   <div class="login-gate" id="loginGate">
+    <div class="login-gradient"></div>
+    <div class="login-gradient-2"></div>
+    <div class="login-frost"></div>
     <div class="login-card">
       <svg class="login-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="4" y="11" width="16" height="10" rx="2"/>
