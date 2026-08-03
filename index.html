@@ -6,7 +6,14 @@
 <title>Vladilena·Milizé · 变速影集</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@200;300;400;500&family=Noto+Serif+SC:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="dns-prefetch" href="https://cdn.pixabay.com">
+<!-- 精简字重：Cormorant 400, Jost 300/400, Noto Serif SC 300/400 -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400&family=Jost:wght@300;400&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+<!-- 预加载第一行首屏图片 -->
+<link rel="preload" as="image" href="photos/r1_1.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="photos/r1_2.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="photos/r1_3.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="photos/r1_4.jpg" fetchpriority="high">
 <style>
   /* ============ 基底：封死滚动 + 深空灰 ============ */
   *, *::before, *::after { box-sizing: border-box; }
@@ -1187,11 +1194,12 @@
       '<div class="track">' +
         '<div class="set">' + setHTML + '</div>' +
         '<div class="set">' + setHTML + '</div>' +
-        '<div class="set">' + setHTML + '</div>' +
+        // 第三组延迟创建，减少初始 20 个 img 节点
       '</div>' +
       '<div class="row-feather"></div>' +
       '<div class="scan scan-top"></div>' +
       '<div class="scan scan-bottom"></div>';
+    row.dataset.needsThirdSet = '1';
     gallery.appendChild(row);
   });
 
@@ -1201,6 +1209,26 @@
     if (img.complete) done();
     else { img.addEventListener('load', done); img.addEventListener('error', done); }
   });
+
+  // ============ 延迟创建第三组复制集（首屏图片加载后） ============
+  function addThirdSets() {
+    var rows = gallery.querySelectorAll('.row[data-needs-third-set]');
+    rows.forEach(function (row) {
+      var track = row.querySelector('.track');
+      var firstSet = track.querySelector('.set');
+      if (firstSet && track.children.length < 3) {
+        var thirdSet = firstSet.cloneNode(true);
+        track.appendChild(thirdSet);
+      }
+      row.removeAttribute('data-needs-third-set');
+    });
+  }
+  // 用 requestIdleCallback 在浏览器空闲时创建第三组
+  if (window.requestIdleCallback) {
+    window.requestIdleCallback(function () { setTimeout(addThirdSets, 500); }, { timeout: 3000 });
+  } else {
+    setTimeout(addThirdSets, 1500);
+  }
 
   // ============ cubic-bezier 求值器 ============
   function makeBezier(x1, y1, x2, y2) {
@@ -1375,10 +1403,10 @@
     }
   ];
 
-  // 真实音频元素
+  // 真实音频元素（延迟加载，不预下载）
   var audio = new Audio();
   audio.volume = 0.7;
-  audio.crossOrigin = 'anonymous';
+  var audioLoaded = false; // 标记音频是否已加载过
 
   var currentTrack = 0;
   var isPlaying = false;
@@ -1416,14 +1444,17 @@
   function loadTrack(idx) {
     currentTrack = idx;
     var t = PLAYLIST[idx];
-    // 设置音频源
-    audio.src = t.src;
-    audio.load();
+    // 延迟加载音频：只在用户交互后才真正加载音频源
+    if (audioLoaded) {
+      audio.src = t.src;
+      audio.load();
+      if (isPlaying) audio.play().catch(function(){});
+    }
     // 更新迷你播放器
     art.src = t.art;
     titleEl.textContent = t.title;
     artistEl.textContent = t.artist;
-    totalEl.textContent = '0:00';
+    totalEl.textContent = t.duration ? formatTime(t.duration) : '0:00';
     // 更新全屏播放器
     var fpArt2 = document.getElementById('fpArt');
     var fpTitle2 = document.getElementById('fpTitle');
@@ -1481,8 +1512,13 @@
     playIcon.innerHTML = icon;
     playBtn.setAttribute('aria-label', label);
     if (isPlaying) {
+      // 首次播放时才加载音频
+      if (!audioLoaded) {
+        audioLoaded = true;
+        audio.src = PLAYLIST[currentTrack].src;
+        audio.load();
+      }
       audio.play().catch(function(e){ console.warn('播放失败:', e); });
-      lastTick = performance.now();
     } else {
       audio.pause();
     }
